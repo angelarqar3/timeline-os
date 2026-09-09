@@ -7408,41 +7408,53 @@ class TimelineApp {
     const container = document.getElementById('peopleViewContainer');
     if (!container) return;
 
-    const next15Days = '2026-09-22';
+    // Cálculo dinámico del horizonte de 30 días a partir de la fecha actual
+    const baseDate = new Date((this.todayStr || this.getRealTodayStr()) + 'T00:00:00');
+    const next30Date = new Date(baseDate);
+    next30Date.setDate(next30Date.getDate() + 30);
+    const next30Days = next30Date.toISOString().split('T')[0];
 
     container.innerHTML = `
       <div class="people-directory-wrapper">
         <div class="directory-head">
           <div>
             <h2>Carga de Trabajo y Recursos Humanos</h2>
-            <p>Distribución transversal de actividades profesionales en los próximos 15 días.</p>
+            <p>Distribución transversal de actividades y tareas en los próximos 30 días (${formatDateDDMMYYYY(this.todayStr)} al ${formatDateDDMMYYYY(next30Days)}).</p>
           </div>
-          <button class="btn-secondary" onclick="window.timelineApp.setView('timeline')">
-            Ver en Línea de Tiempo Global
-          </button>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-primary" onclick="window.timelineApp.openCreateUserModal()">+ Nuevo Profesional</button>
+            <button class="btn-secondary" onclick="window.timelineApp.setView('timeline')">
+              Ver en Línea de Tiempo Global
+            </button>
+          </div>
         </div>
 
         <div class="people-cards-grid">
           ${this.state.members.map(member => {
             const memberMilestones = this.state.milestones.filter(m => m.responsibleId === member.id);
-            const nextActivities = memberMilestones.filter(m => m.date >= this.todayStr && m.date <= next15Days);
+            const nextActivities = memberMilestones.filter(m => {
+              const start = normalizeISO(m.date);
+              const end = m.endDate ? normalizeISO(m.endDate) : start;
+              return start <= next30Days && end >= this.todayStr;
+            }).sort((a, b) => normalizeISO(a.date).localeCompare(normalizeISO(b.date)));
+
             const memberConflicts = this.state.conflicts.filter(c => c.responsibleId === member.id);
-            const isOverloaded = nextActivities.length > 5 || memberConflicts.length > 0;
+            const isOverloaded = nextActivities.length > 8 || memberConflicts.length > 0;
 
             return `
               <div class="member-card ${memberConflicts.length > 0 ? 'has-member-conflict' : ''}">
                 <div class="member-head">
-                  <div class="member-avatar" style="background: ${member.color};">${member.name.charAt(0)}</div>
+                  <div class="member-avatar" style="background: ${member.color};">${(member.name || 'P').charAt(0)}</div>
                   <div class="member-info">
-                    <h4>${member.name}</h4>
-                    <span class="member-role">${member.role}</span>
-                    <span class="member-base">📍 Base: ${member.baseLocation}</span>
+                    <h4>${escapeHtml(member.name)}</h4>
+                    <span class="member-role">${escapeHtml(member.role)}</span>
+                    <span class="member-base">📍 Base: ${escapeHtml(member.baseLocation)}</span>
                   </div>
                 </div>
 
                 <div class="member-workload-bar">
                   <div class="workload-info">
-                    <span>Carga próximos 15 días:</span>
+                    <span>Carga próximos 30 días:</span>
                     <strong class="${isOverloaded ? 'text-danger' : ''}">${nextActivities.length} actividades</strong>
                   </div>
                   <div class="status-chip ${isOverloaded ? 'chip-overload' : 'chip-ok'}">
@@ -7457,22 +7469,24 @@ class TimelineApp {
                 ` : ''}
 
                 <div class="member-assigned-list">
-                  <h5>Próximos Hitos:</h5>
-                  ${nextActivities.length === 0 ? '<div class="no-act">Sin actividades programadas</div>' : ''}
-                  ${nextActivities.slice(0, 4).map(m => {
+                  <h5>Próximas Actividades (30 días):</h5>
+                  ${nextActivities.length === 0 ? '<div class="no-act">Sin actividades programadas en los próximos 30 días</div>' : ''}
+                  ${nextActivities.slice(0, 6).map(m => {
                     const prj = this.state.projects.find(p => p.id === m.projectId) || {};
+                    const isTask = m.endDate && normalizeISO(m.endDate) > normalizeISO(m.date);
                     return `
-                      <div class="assigned-mini-item" onclick="window.timelineApp.openMilestoneDetails('${m.id}')">
-                        <span class="dot" style="background:${prj.color};"></span>
+                      <div class="assigned-mini-item" onclick="window.timelineApp.openMilestoneInspector('${m.id}')" title="${escapeHtml(m.name)}">
+                        <span class="dot" style="background:${prj.color || '#3B82F6'};"></span>
                         <span class="m-date-mini">${formatDateDDMMYYYY(m.date)}</span>
-                        <span class="m-name-mini">${m.name}</span>
+                        <span class="m-name-mini">${escapeHtml(m.name)}</span>
+                        ${isTask ? `<span class="task-bar-duration-badge" style="font-size:9px; padding:0 3px;">Tarea</span>` : ''}
                       </div>
                     `;
                   }).join('')}
                 </div>
 
                 <button class="btn-member-filter" onclick="window.timelineApp.filterByMember('${member.id}')">
-                  Ver Línea de Tiempo de ${member.name.split(' ')[0]} →
+                  Ver Línea de Tiempo de ${escapeHtml(member.name.split(' ')[0])} →
                 </button>
               </div>
             `;
@@ -7481,7 +7495,6 @@ class TimelineApp {
       </div>
     `;
   }
-
   filterByMember(memberId) {
     this.setView('timeline');
     if (this.timelineRenderer) {
