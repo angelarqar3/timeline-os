@@ -734,6 +734,7 @@ body {
 
 /* Tooltip Interactivo Rico */
 .timeline-tooltip {
+  display: none !important; /* Desactivado para evitar parpadeos; se usa el Inspector lateral */
   position: absolute;
   bottom: 38px;
   left: 50%;
@@ -752,6 +753,7 @@ body {
 }
 
 .timeline-milestone-item:hover .timeline-tooltip {
+  display: none !important; /* Desactivado para evitar parpadeos; se usa el Inspector lateral */
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -1964,6 +1966,7 @@ body {
 
 /* Aislamiento y sombra reforzada para tooltips */
 .timeline-tooltip {
+  display: none !important; /* Desactivado para evitar parpadeos; se usa el Inspector lateral */
   z-index: 120 !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--border-color) !important;
 }
@@ -2073,17 +2076,25 @@ body {
 }
 
 .btn-close-inspector {
-  background: none;
-  border: none;
-  color: #94A3B8;
-  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  background: rgba(51, 65, 85, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: #F8FAFC;
+  font-size: 22px;
   cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .btn-close-inspector:hover {
-  color: #F8FAFC;
+  background: #EF4444;
+  border-color: #EF4444;
+  color: white;
 }
 
 .inspector-body {
@@ -2581,6 +2592,42 @@ body {
   flex-shrink: 0;
 }
 
+
+.btn-toggle-filters {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-toggle-filters:hover {
+  background: var(--bg-secondary);
+  border-color: var(--accent-blue);
+}
+
+.btn-toggle-filters.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: var(--accent-blue);
+  color: #93C5FD;
+}
+
+.filter-badge-count {
+  background: var(--accent-blue);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
 </style>
 </head>
 <body>
@@ -2722,28 +2769,21 @@ body {
         </div>
 
         <div class="header-right-actions">
-          <!-- Indicador En Línea en Tiempo Real -->
-          <div class="cloud-live-indicator" style="display:flex; align-items:center; gap:6px; background:rgba(16, 185, 129, 0.15); border:1px solid rgba(16, 185, 129, 0.4); color:#34D399; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px;">
-            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></span>
-            EN LÍNEA (Supabase)
-          </div>
-          <!-- Botón Sincronizador de Google Calendar Bidireccional -->
-          <button class="btn-gcal-sync" id="btnGcalHeaderSync" onclick="window.timelineApp.syncFromGoogleCalendar()" title="Sincronizar cambios bidireccionales con Google Calendar">
-            <span class="sync-icon">🔄</span> Conectar Google Calendar
+          <!-- Botón Colapsable de Filtros -->
+          <button class="btn-toggle-filters" id="btnToggleFilters" onclick="window.timelineApp.toggleFiltersPanel()" title="Mostrar u ocultar filtros">
+            <span>🔍 Filtros</span>
+            <span class="filter-badge-count" id="filterActiveBadge" style="display:none;">0</span>
           </button>
 
           <div class="conflict-pill-alert" id="headerConflictCount" onclick="window.timelineApp.setView('alerts')">
-            ⚠ 3 conflictos detectados
+            ⚠ 3 conflictos
           </div>
 
           <button class="btn-quick-milestone" onclick="window.timelineApp.openQuickMilestoneModal()" title="Presiona 'N' en el teclado">
-            <span>+ Hito</span>
+            <span>+ Hito / Tarea</span>
             <kbd style="font-size:10px; opacity:0.8; background:rgba(0,0,0,0.2); padding:1px 4px; border-radius:3px;">N</kbd>
           </button>
 
-                    <button class="btn-quick-import" onclick="window.timelineApp.openImportProjectModal()" style="background:#0F766E; color:white; border:none; padding:7px 12px; font-size:13px; font-weight:600; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;" title="Importar proyecto completo desde archivo JSON o texto de IA">
-            <span>📂 Importar</span>
-          </button>
           <button class="btn-quick-project" onclick="window.timelineApp.openQuickProjectModal()">
             + Proyecto
           </button>
@@ -2752,7 +2792,7 @@ body {
       </header>
 
       <!-- BARRA DE FILTROS -->
-      <section class="filters-toolbar">
+      <section class="filters-toolbar" id="filtersToolbar" style="display: none;">
         <select id="filterProject" class="filter-select">
           <option value="all">Todos los proyectos</option>
         </select>
@@ -2813,7 +2853,7 @@ body {
   </div>
 
   <!-- MODAL: GESTIÓN DE ETAPA CON DURACIÓN (CREAR Y EDITAR) -->
-  <div class="modal-backdrop" id="stageModal" onclick="if(event.target === this) window.timelineApp.closeStageModal()">
+  <div class="modal-backdrop" id="stageModal">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 id="stageModalTitle">GESTIÓN DE ETAPA</h3>
@@ -2872,7 +2912,7 @@ body {
   </div>
 
   <!-- MODAL: CREAR HITO RÁPIDO (< 10s) -->
-  <div class="modal-backdrop" id="quickMilestoneModal" onclick="if(event.target === this) window.timelineApp.closeQuickMilestoneModal()">
+  <div class="modal-backdrop" id="quickMilestoneModal">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3>NUEVO HITO</h3>
@@ -2964,7 +3004,7 @@ body {
   </div>
 
   <!-- MODAL: EDITAR HITO -->
-  <div class="modal-backdrop" id="editMilestoneModal" onclick="if(event.target === this) window.timelineApp.closeEditMilestoneModal()">
+  <div class="modal-backdrop" id="editMilestoneModal">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3>EDITAR HITO</h3>
@@ -3080,7 +3120,7 @@ body {
   </div>
 
   <!-- MODAL: EDITAR PROYECTO -->
-  <div class="modal-backdrop" id="editProjectModal" onclick="if(event.target === this) window.timelineApp.closeEditProjectModal()">
+  <div class="modal-backdrop" id="editProjectModal">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3>EDITAR PROYECTO</h3>
@@ -3169,7 +3209,7 @@ body {
   </div>
 
   <!-- MODAL: CREAR PROYECTO RÁPIDO -->
-  <div class="modal-backdrop" id="quickProjectModal" onclick="if(event.target === this) window.timelineApp.closeQuickProjectModal()">
+  <div class="modal-backdrop" id="quickProjectModal">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3>NUEVO PROYECTO</h3>
@@ -3177,6 +3217,14 @@ body {
       </div>
 
       <div class="modal-body">
+        <div style="background:#141E2F; border:1px solid #334155; border-radius:8px; padding:10px 14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:12px; color:#94A3B8;">
+            ¿Deseas importar la planificación completa desde archivo o IA?
+          </div>
+          <button type="button" class="btn-secondary" onclick="window.timelineApp.closeQuickProjectModal(); window.timelineApp.openImportProjectModal();" style="font-size:11px; padding:5px 12px; background:#0F766E; border-color:#14B8A6; color:white; font-weight:600; cursor:pointer;">
+            📂 Importar Proyecto (JSON / IA)
+          </button>
+        </div>
         <form id="quickProjectForm" onsubmit="event.preventDefault(); window.timelineApp.saveQuickProject();">
           <div class="form-group">
             <label for="pName">Nombre del Proyecto <span style="color:var(--accent-rose);">*</span></label>
@@ -3241,7 +3289,7 @@ body {
   </div>
 
   <!-- MODAL: DETALLE Y ACCIONES DE HITO -->
-  <div class="modal-backdrop" id="milestoneDetailModal" onclick="if(event.target === this) window.timelineApp.closeMilestoneDetailModal()">
+  <div class="modal-backdrop" id="milestoneDetailModal">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3>Ficha del Hito</h3>
@@ -3257,7 +3305,7 @@ body {
 
   
   <!-- MODAL: AGREGAR / EDITAR PROFESIONAL (RECURSOS HUMANOS) -->
-  <div class="modal-backdrop" id="userModal" onclick="if(event.target === this) window.timelineApp.closeUserModal()">
+  <div class="modal-backdrop" id="userModal">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 id="userModalTitle">NUEVO PROFESIONAL / EQUIPO</h3>
@@ -3309,7 +3357,7 @@ body {
   </div>
 
   <!-- MODAL: CAMBIO DE CONTRASEÑA PERSONAL -->
-  <div class="modal-backdrop" id="changePasswordModal" onclick="if(event.target === this) window.timelineApp.closeChangePasswordModal()">
+  <div class="modal-backdrop" id="changePasswordModal">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3>CAMBIAR MI CONTRASEÑA</h3>
@@ -3342,7 +3390,7 @@ body {
 
   
   <!-- MODAL: IMPORTAR PROYECTO COMPLETO (ARCHIVO O TEXTO DE IA) -->
-  <div class="modal-backdrop" id="importProjectModal" onclick="if(event.target === this) window.timelineApp.closeImportProjectModal()">
+  <div class="modal-backdrop" id="importProjectModal">
     <div class="modal-dialog" style="max-width:650px;">
       <div class="modal-header">
         <h3>IMPORTAR PROYECTO (ARCHIVO / IA)</h3>
@@ -6282,6 +6330,7 @@ class TimelineApp {
 
   applyFilters() {
     this.timelineRenderer.setFilters(this.state.filters);
+    this.updateFilterBadgeCount();
   }
 
   resetFilters() {
@@ -6314,6 +6363,7 @@ class TimelineApp {
     if (this.timelineRenderer) {
       this.timelineRenderer.scrollToDate(this.todayStr, false);
     }
+    this.updateFilterBadgeCount();
     this.showToast('✓ Filtros limpiados y vista ajustada en HOY');
   }
 
@@ -7957,18 +8007,22 @@ class TimelineApp {
   }
 
   bindEvents() {
+    
+    // Cerrar inspector flotante al hacer clic fuera del recuadro
+    document.addEventListener('mousedown', (e) => {
+      const inspector = document.getElementById('milestoneInspectorOverlay');
+      if (!inspector || inspector.style.display === 'none') return;
+      if (inspector.contains(e.target)) return;
+      if (e.target.closest('.timeline-milestone-item') || e.target.closest('.timeline-task-bar') || e.target.closest('.modal-dialog')) return;
+      window.timelineApp.closeMilestoneInspector();
+    });
+
     window.addEventListener('keydown', (e) => {
       if ((e.key === 'n' || e.key === 'N') && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
         e.preventDefault();
         this.openQuickMilestoneModal();
       }
-      if (e.key === 'Escape') {
-        this.closeQuickMilestoneModal();
-        this.closeQuickProjectModal();
-        this.closeMilestoneDetailModal();
-        this.closeEditMilestoneModal();
-        this.closeEditProjectModal();
-      }
+// Cierre por Escape deshabilitado para evitar pérdida accidental de datos
     });
 
     const bindFilter = (id, key) => {
@@ -8756,6 +8810,44 @@ class TimelineApp {
 
   handleEditTaskDateChange() {
     this.handleEditTaskDurationChange();
+  }
+
+
+  toggleFiltersPanel() {
+    const bar = document.getElementById('filtersToolbar');
+    const btn = document.getElementById('btnToggleFilters');
+    if (!bar) return;
+    const isHidden = bar.style.display === 'none' || !bar.classList.contains('is-open');
+    if (isHidden) {
+      bar.style.display = 'flex';
+      bar.classList.add('is-open');
+      if (btn) btn.classList.add('active');
+    } else {
+      bar.style.display = 'none';
+      bar.classList.remove('is-open');
+      if (btn) btn.classList.remove('active');
+    }
+  }
+
+  updateFilterBadgeCount() {
+    let count = 0;
+    if (this.state.filters.projectId !== 'all') count++;
+    if (this.state.filters.responsibleId !== 'all') count++;
+    if (this.state.filters.region !== 'all') count++;
+    if (this.state.filters.milestoneType !== 'all') count++;
+    if (this.state.filters.status !== 'all') count++;
+    if (this.state.filters.priority !== 'all') count++;
+    if (this.state.filters.search && this.state.filters.search.trim() !== '') count++;
+
+    const badge = document.getElementById('filterActiveBadge');
+    if (badge) {
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
   }
 
   showToast(message) {
