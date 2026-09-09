@@ -5323,7 +5323,7 @@ class SupabaseService {
       avatar_color: u.color || '#2563EB',
       base_location: u.baseLocation || 'Quillota',
       phone: u.phone || null,
-      password: u.password || (u.username === 'admin' ? 'admin' : 'consultor2026')
+      password: u.password || (u.username === 'admin' ? 'admin' : null)
     };
 
     try {
@@ -6271,8 +6271,19 @@ class TimelineApp {
     const searchInput = document.getElementById('searchFilterInput');
     if (searchInput) searchInput.value = '';
 
+    // Volver a la vista maestra general si estaba en filtro de persona o subvista
+    this.setView('timeline');
+    if (this.timelineRenderer) {
+      this.timelineRenderer.options.activeMemberId = null;
+      this.timelineRenderer.options.activeProjectId = null;
+      this.timelineRenderer.setViewMode('empresa');
+    }
+
     this.applyFilters();
-    this.showToast('Filtros restablecidos');
+
+    // Posicionar inmediatamente en el día de hoy (alineado a la izquierda)
+    this.goToToday();
+    this.showToast('✓ Filtros limpiados y vista alineada en HOY');
   }
 
   populateFilterDropdowns() {
@@ -7473,7 +7484,12 @@ class TimelineApp {
 
   filterByMember(memberId) {
     this.setView('timeline');
-    this.timelineRenderer.setViewMode('persona', memberId);
+    if (this.timelineRenderer) {
+      this.timelineRenderer.setViewMode('persona', memberId);
+      setTimeout(() => {
+        this.goToToday();
+      }, 70);
+    }
   }
 
   renderAlertsView() {
@@ -7895,6 +7911,7 @@ class TimelineApp {
       this.setView('project-detail', id);
     } else if (type === 'member') {
       this.filterByMember(id);
+      this.goToToday();
     }
   }
 
@@ -8015,7 +8032,8 @@ class TimelineApp {
   async saveUserModal() {
     const id = document.getElementById('editUserId').value;
     const name = document.getElementById('uName').value.trim();
-    const role = document.getElementById('uRole').value;
+    const roleInput = document.getElementById('uRole');
+    const role = (roleInput ? roleInput.value.trim() : 'Arquitecto') || 'Arquitecto';
     const username = document.getElementById('uUsername') ? document.getElementById('uUsername').value.trim() : name.toLowerCase().replace(/\s+/g, '.');
     const email = document.getElementById('uEmail').value.trim() || `${name.toLowerCase().replace(/\s+/g, '.')}@consultora.cl`;
     const baseLocation = document.getElementById('uBaseLocation').value.trim() || 'Quillota';
@@ -8028,7 +8046,7 @@ class TimelineApp {
     }
 
     if (id) {
-      // Editar usuario existente
+      // Editar profesional existente
       const u = this.state.members.find(x => x.id === id);
       if (u) {
         u.name = name;
@@ -8037,18 +8055,17 @@ class TimelineApp {
         u.role = role;
         u.baseLocation = baseLocation;
         u.color = color;
-        u.password = password;
-        this.showToast(`Actualizando usuario en Supabase...`);
+        this.showToast(`Actualizando profesional en Supabase...`);
         const res = await this.supabaseService.saveMember(u);
         if (res && res.error) {
           this.showToast(`Error al actualizar en Supabase: ${res.error}`, 'error');
         } else {
-          this.showToast(`✓ Usuario "${name}" actualizado en Supabase Cloud`);
+          this.showToast(`✓ Profesional "${name}" actualizado en la nube`);
         }
       }
     } else {
-      // Crear nuevo usuario
-      const newUser = {
+      // Crear nuevo profesional para el equipo (sin credenciales de login)
+      const newMember = {
         id: generateUUID(),
         name,
         username,
@@ -8056,25 +8073,23 @@ class TimelineApp {
         role,
         baseLocation,
         color,
-        password,
-        canManageUsers: role === 'admin',
-        canManageCompany: role === 'admin'
+        phone: null
       };
-      this.state.members.push(newUser);
-      this.showToast(`Guardando usuario "${name}" en Supabase...`);
-      const res = await this.supabaseService.saveMember(newUser);
+      this.state.members.push(newMember);
+      this.showToast(`Guardando profesional "${name}" en Supabase...`);
+      const res = await this.supabaseService.saveMember(newMember);
       if (res && res.error) {
         this.showToast(`Error al guardar en Supabase: ${res.error}`, 'error');
-        alert(`Error al guardar usuario en la base de datos: ${res.error}`);
+        alert(`Error al guardar profesional en la base de datos: ${res.error}`);
       } else {
-        this.showToast(`✓ Usuario "${name}" guardado exitosamente en Supabase Cloud`);
+        this.showToast(`✓ Profesional "${name}" agregado al equipo y sincronizado en la nube`);
       }
     }
 
-    this.saveState();
     this.populateFilterDropdowns();
     this.closeUserModal();
-    this.renderSettingsView();
+    if (this.state.currentView === 'people') this.renderPeopleView();
+    if (this.state.currentView === 'settings') this.renderSettingsView();
   }
 
   async deleteUser(userId) {
