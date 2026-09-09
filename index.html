@@ -2441,7 +2441,69 @@ body {
   }
 }
 
-  </style>
+  
+/* ==========================================================================
+   SELECTOR DE ESCALA MULTINIVEL ESTILO MS PROJECT (DÍAS / SEMANAS / MESES)
+   ========================================================================== */
+
+.timescale-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  background: #090D16;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.btn-timescale-mode {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-timescale-mode:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.btn-timescale-mode.active {
+  background: var(--accent-blue) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+/* Celdas especiales para modo Semanas y Meses */
+.timeline-date-cell.mode-semanas {
+  padding: 6px 4px !important;
+}
+
+.timeline-date-cell.mode-meses {
+  padding: 6px 8px !important;
+}
+
+.cell-month-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cell-week-range {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+</style>
 </head>
 <body>
 
@@ -2548,16 +2610,18 @@ body {
                 <div class="header-left-tools">
           <button class="btn-hamburger" onclick="window.timelineApp.toggleMobileSidebar()" aria-label="Abrir menú">☰</button>
           
-          <div class="scale-controls-group">
-            <span class="scale-label">Escala:</span>
-            <button class="btn-scale" data-days="1">1d</button>
-            <button class="btn-scale" data-days="3">3d</button>
-            <button class="btn-scale" data-days="7">7d</button>
-            <button class="btn-scale" data-days="10">10d</button>
-            <button class="btn-scale active" data-days="15">15d</button>
-            <button class="btn-scale" data-days="30">30d</button>
-            <button class="btn-scale" data-days="60">60d</button>
-            <button class="btn-scale" data-days="90">90d</button>
+          <!-- Selector de Escala Estilo MS Project -->
+          <div class="timescale-segmented-control">
+            <span class="scale-label" style="font-size:11px; color:var(--text-muted); font-weight:700; padding:0 8px; text-transform:uppercase;">Vista:</span>
+            <button class="btn-timescale-mode active" id="btnScaleDias" onclick="window.timelineApp.setScaleMode('dias')" title="Vista diaria detallada (ideal 1 a 30 días)">
+              📅 Días
+            </button>
+            <button class="btn-timescale-mode" id="btnScaleSemanas" onclick="window.timelineApp.setScaleMode('semanas')" title="Vista semanal táctica (ideal 1 a 6 meses)">
+              📊 Semanas
+            </button>
+            <button class="btn-timescale-mode" id="btnScaleMeses" onclick="window.timelineApp.setScaleMode('meses')" title="Vista mensual estratégica / multianual (proyectos de más de 1 año)">
+              📈 Meses (Anual)
+            </button>
           </div>
 
           <div class="nav-temporal-group">
@@ -2599,6 +2663,9 @@ body {
             <kbd style="font-size:10px; opacity:0.8; background:rgba(0,0,0,0.2); padding:1px 4px; border-radius:3px;">N</kbd>
           </button>
 
+                    <button class="btn-quick-import" onclick="window.timelineApp.openImportProjectModal()" style="background:#0F766E; color:white; border:none; padding:7px 12px; font-size:13px; font-weight:600; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;" title="Importar proyecto completo desde archivo JSON o texto de IA">
+            <span>📂 Importar</span>
+          </button>
           <button class="btn-quick-project" onclick="window.timelineApp.openQuickProjectModal()">
             + Proyecto
           </button>
@@ -3169,6 +3236,54 @@ body {
       <div class="modal-footer">
         <button class="btn-secondary" onclick="window.timelineApp.closeChangePasswordModal()">Cancelar</button>
         <button class="btn-primary" onclick="window.timelineApp.saveNewPassword()">Actualizar Contraseña</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- MODAL: IMPORTAR PROYECTO COMPLETO (ARCHIVO O TEXTO DE IA) -->
+  <div class="modal-backdrop" id="importProjectModal" onclick="if(event.target === this) window.timelineApp.closeImportProjectModal()">
+    <div class="modal-dialog" style="max-width:650px;">
+      <div class="modal-header">
+        <h3>IMPORTAR PROYECTO (ARCHIVO / IA)</h3>
+        <button class="btn-close-modal" onclick="window.timelineApp.closeImportProjectModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
+          Automatiza la creación de un proyecto nuevo con todas sus etapas (fechas y duraciones calculadas) e hitos. Puedes subir un archivo o pegar directamente el JSON generado por una IA (Gemini, ChatGPT, Claude).
+        </p>
+
+        <div style="background:#141E2F; border:1px solid #334155; border-radius:8px; padding:12px 14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong style="color:#60A5FA; font-size:12px;">Plantilla Base Documentada</strong>
+            <div style="color:#94A3B8; font-size:11px; margin-top:2px;">Usa esta plantilla como modelo para ti o para pedirle a una IA que la rellene.</div>
+          </div>
+          <button class="btn-secondary" onclick="window.timelineApp.downloadProjectTemplate()" style="font-size:12px; padding:5px 10px; white-space:nowrap;">
+            📥 Descargar Plantilla JSON
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label style="font-weight:700;">Opción A: Subir Archivo JSON</label>
+          <input type="file" id="importProjectFileInput" accept=".json" class="input-field" onchange="window.timelineApp.handleImportFile(event)">
+        </div>
+
+        <div class="form-group">
+          <label style="font-weight:700;">Opción B: O pegar texto JSON directamente (desde IA)</label>
+          <textarea id="importProjectJsonText" class="input-field" rows="9" style="font-family:var(--font-mono); font-size:11px;" placeholder='{
+  "proyecto": { "nombre": "Parque Fluvial", "codigo": "PF-01", "fecha_inicio": "2026-09-01", ... },
+  "etapas": [ { "nombre": "Diagnóstico", "duracion_dias": 30, ... } ],
+  "hitos": [ { "nombre": "Visita Terreno", "fecha": "2026-09-10", "tipo": "terreno", ... } ]
+}'></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="window.timelineApp.closeImportProjectModal()">Cancelar</button>
+        <button class="btn-primary" onclick="window.timelineApp.processImportProject()" style="background:#0F766E;">
+          🚀 Importar y Crear Proyecto en la Nube
+        </button>
       </div>
     </div>
   </div>
@@ -4028,25 +4143,32 @@ class TimelineRenderer {
   constructor(containerId, options = {}) {
     this.container = document.getElementById(containerId);
     this.options = {
+      scaleMode: 'dias', // 'dias' | 'semanas' | 'meses'
       startDate: new Date('2026-09-07T00:00:00'),
-      daysCount: 15,
       todayDateStr: '2026-09-07',
       viewMode: 'empresa', // 'empresa' | 'proyecto' | 'persona'
       activeProjectId: null,
       activeMemberId: null,
       filters: {},
-      onMilestoneClick: null,
-      onProjectClick: null,
       ...options
     };
 
     this.dragState = { isDown: false, startX: 0, scrollLeft: 0 };
     this.draggedMilestoneId = null;
+    this.hasScrolledInitial = false;
+  }
+
+  setScaleMode(mode) {
+    if (['dias', 'semanas', 'meses'].includes(mode)) {
+      this.options.scaleMode = mode;
+      this.hasScrolledInitial = false;
+      this.render();
+      setTimeout(() => this.scrollToDate(this.options.todayDateStr), 80);
+    }
   }
 
   setDateRange(startDate, daysCount) {
     this.options.startDate = new Date(startDate);
-    this.options.daysCount = Math.max(1, daysCount);
     this.render();
   }
 
@@ -4067,32 +4189,141 @@ class TimelineRenderer {
     this.render();
   }
 
-  render() {
-    if (!this.container || !this.data) return;
-
-    // Lienzo temporal continuo (90 días al pasado y 180 días al futuro)
-    const dates = [];
+  generateTimeUnits() {
+    const mode = this.options.scaleMode || 'dias';
     const baseCenter = new Date(this.options.startDate || this.options.todayDateStr + 'T00:00:00');
     baseCenter.setHours(0, 0, 0, 0);
 
-    const pastBuffer = 90; // 90 días hacia atrás para navegación infinita al pasado
-    const futureBuffer = Math.max(180, this.options.daysCount + 90);
+    const units = [];
 
-    for (let i = -pastBuffer; i <= futureBuffer; i++) {
-      const d = new Date(baseCenter);
-      d.setDate(d.getDate() + i);
-      dates.push(d);
+    if (mode === 'dias') {
+      // 90 días al pasado y 180 días al futuro (270 días continuos)
+      const past = 90;
+      const future = 180;
+      const dayNames = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+      const monthNames = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+
+      for (let i = -past; i <= future; i++) {
+        const d = new Date(baseCenter);
+        d.setDate(d.getDate() + i);
+        const dateStr = d.toISOString().split('T')[0];
+        units.push({
+          type: 'day',
+          date: d,
+          dateStr: dateStr,
+          labelTop: monthNames[d.getMonth()],
+          labelMain: d.getDate(),
+          labelSub: dayNames[d.getDay()],
+          isWeekend: d.getDay() === 0 || d.getDay() === 6,
+          isToday: dateStr === this.options.todayDateStr
+        });
+      }
+    } else if (mode === 'semanas') {
+      // 26 semanas al pasado (~6 meses) y 52 semanas al futuro (~1 año) = 78 semanas
+      const startMonday = new Date(baseCenter);
+      const day = startMonday.getDay();
+      const diff = startMonday.getDate() - day + (day === 0 ? -6 : 1);
+      startMonday.setDate(diff);
+
+      const pastWeeks = 26;
+      const futureWeeks = 52;
+      const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+      for (let i = -pastWeeks; i <= futureWeeks; i++) {
+        const mon = new Date(startMonday);
+        mon.setDate(mon.getDate() + (i * 7));
+        const sun = new Date(mon);
+        sun.setDate(sun.getDate() + 6);
+
+        const monStr = mon.toISOString().split('T')[0];
+        const sunStr = sun.toISOString().split('T')[0];
+
+        // Semana ISO
+        const dTemp = new Date(Date.UTC(mon.getFullYear(), mon.getMonth(), mon.getDate()));
+        const dayNum = dTemp.getUTCDay() || 7;
+        dTemp.setUTCDate(dTemp.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(dTemp.getUTCFullYear(), 0, 1));
+        const weekNo = Math.ceil((((dTemp - yearStart) / 86400000) + 1) / 7);
+
+        const isCurrentWeek = this.options.todayDateStr >= monStr && this.options.todayDateStr <= sunStr;
+
+        units.push({
+          type: 'week',
+          startDate: mon,
+          endDate: sun,
+          startDateStr: monStr,
+          endDateStr: sunStr,
+          weekNum: weekNo,
+          labelTop: `${monthNames[mon.getMonth()]} ${mon.getFullYear()}`,
+          labelMain: `Sem ${weekNo}`,
+          labelSub: `${String(mon.getDate()).padStart(2, '0')}/${String(mon.getMonth()+1).padStart(2, '0')} - ${String(sun.getDate()).padStart(2, '0')}/${String(sun.getMonth()+1).padStart(2, '0')}`,
+          isWeekend: false,
+          isToday: isCurrentWeek
+        });
+      }
+    } else if (mode === 'meses') {
+      // 12 meses al pasado (~1 año) y 24 meses al futuro (~2 años) = 36 meses
+      const pastMonths = 12;
+      const futureMonths = 24;
+      const currYear = baseCenter.getFullYear();
+      const currMonth = baseCenter.getMonth();
+      const monthsEs = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+      for (let i = -pastMonths; i <= futureMonths; i++) {
+        const totalMonth = currMonth + i;
+        const y = currYear + Math.floor(totalMonth / 12);
+        const m = ((totalMonth % 12) + 12) % 12;
+
+        const firstDay = new Date(y, m, 1);
+        const lastDay = new Date(y, m + 1, 0);
+        const daysInMonth = lastDay.getDate();
+
+        const startStr = `${y}-${String(m + 1).padStart(2, '0')}-01`;
+        const endStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
+        const isCurrentMonth = this.options.todayDateStr >= startStr && this.options.todayDateStr <= endStr;
+
+        units.push({
+          type: 'month',
+          year: y,
+          month: m + 1,
+          daysInMonth: daysInMonth,
+          startDate: firstDay,
+          endDate: lastDay,
+          startDateStr: startStr,
+          endDateStr: endStr,
+          labelTop: `${y}`,
+          labelMain: monthsEs[m],
+          labelSub: `${daysInMonth} días`,
+          isWeekend: false,
+          isToday: isCurrentMonth
+        });
+      }
     }
 
-    const colWidth = this.calculateColumnWidth(this.options.daysCount);
-    const totalTimelineWidth = Math.max(900, dates.length * colWidth);
+    return units;
+  }
+
+  calculateColumnWidth() {
+    const mode = this.options.scaleMode || 'dias';
+    if (mode === 'dias') return 78;
+    if (mode === 'semanas') return 130;
+    if (mode === 'meses') return 160;
+    return 78;
+  }
+
+  render() {
+    if (!this.container || !this.data) return;
+
+    const units = this.generateTimeUnits();
+    const colWidth = this.calculateColumnWidth();
+    const totalTimelineWidth = Math.max(900, units.length * colWidth);
     const visibleTracks = this.getVisibleTracks();
 
     this.container.innerHTML = `
       <div class="timeline-viewport" id="timelineViewport">
         <div class="timeline-grid-wrapper" style="min-width: ${totalTimelineWidth + 280}px;">
           
-          <!-- Encabezado de Fechas (Sticky superior y zona de drop) -->
+          <!-- Encabezado de Fechas Multinivel (Sticky superior y zona de drop) -->
           <div class="timeline-header-row">
             <div class="timeline-header-label-col">
               <span class="track-title-heading">
@@ -4102,74 +4333,84 @@ class TimelineRenderer {
             </div>
             
             <div class="timeline-header-dates-track" style="width: ${totalTimelineWidth}px;">
-              ${dates.map((d, index) => this.renderDateHeaderCell(d, colWidth, index)).join('')}
+              ${units.map((u, index) => this.renderDateHeaderCell(u, colWidth, index)).join('')}
             </div>
           </div>
 
           <!-- Filas de Proyectos / Personas -->
           <div class="timeline-body-tracks" id="timelineBodyTracks">
             ${visibleTracks.length === 0 ? this.renderEmptyState() : ''}
-            ${visibleTracks.map((track, trackIndex) => this.renderTrackRow(track, dates, colWidth, trackIndex)).join('')}
+            ${visibleTracks.map((track, trackIndex) => this.renderTrackRow(track, units, colWidth, trackIndex)).join('')}
           </div>
 
         </div>
       </div>
     `;
 
-    this.setupInteractivity(dates, colWidth);
+    this.setupInteractivity(units, colWidth);
+
+    // Posicionar automáticamente en Hoy AL LADO IZQUIERDO como primer día visible
     if (!this.hasScrolledInitial) {
       setTimeout(() => {
-        const vp = document.getElementById('timelineViewport');
-        const todayIdx = dates.findIndex(d => d.toISOString().split('T')[0] === this.options.todayDateStr);
-        if (vp && todayIdx >= 0) {
-          const todayX = todayIdx * colWidth;
-          vp.scrollLeft = Math.max(0, todayX - 250);
-          this.hasScrolledInitial = true;
-        }
-      }, 50);
+        this.scrollToDate(this.options.todayDateStr);
+        this.hasScrolledInitial = true;
+      }, 80);
     }
   }
 
-  calculateColumnWidth(days) {
-    if (days <= 1) return 800;
-    if (days <= 3) return 320;
-    if (days <= 7) return 140;
-    if (days <= 10) return 110;
-    if (days <= 15) return 85;
-    if (days <= 30) return 55;
-    if (days <= 60) return 38;
-    return 30;
+  renderDateHeaderCell(unit, width, index) {
+    const mode = this.options.scaleMode || 'dias';
+
+    if (mode === 'dias') {
+      return `
+        <div class="timeline-date-cell ${unit.isToday ? 'is-today' : ''} ${unit.isWeekend ? 'is-weekend' : ''}" 
+             style="width: ${width}px;" 
+             data-date="${unit.dateStr}"
+             data-index="${index}">
+          <div class="date-month-badge">${unit.labelTop}</div>
+          <div class="date-number ${unit.isToday ? 'today-pill' : ''}">${unit.labelMain}</div>
+          <div class="date-day-name">${unit.labelSub}</div>
+          ${unit.isToday ? '<div class="today-tag">HOY</div>' : ''}
+        </div>
+      `;
+    } else if (mode === 'semanas') {
+      return `
+        <div class="timeline-date-cell mode-semanas ${unit.isToday ? 'is-today' : ''}" 
+             style="width: ${width}px;" 
+             data-date="${unit.startDateStr}"
+             data-end-date="${unit.endDateStr}"
+             data-index="${index}">
+          <div class="date-month-badge">${unit.labelTop}</div>
+          <div class="date-number ${unit.isToday ? 'today-pill' : ''}" style="font-size:12px; border-radius:6px; width:auto; padding:0 6px;">
+            ${unit.labelMain}
+          </div>
+          <div class="cell-week-range">${unit.labelSub}</div>
+          ${unit.isToday ? '<div class="today-tag" style="bottom:1px;">ACTUAL</div>' : ''}
+        </div>
+      `;
+    } else if (mode === 'meses') {
+      return `
+        <div class="timeline-date-cell mode-meses ${unit.isToday ? 'is-today' : ''}" 
+             style="width: ${width}px;" 
+             data-date="${unit.startDateStr}"
+             data-end-date="${unit.endDateStr}"
+             data-index="${index}">
+          <div class="date-month-badge" style="letter-spacing:1px;">${unit.labelTop}</div>
+          <div class="cell-month-name ${unit.isToday ? 'today-pill' : ''}" style="width:auto; padding:0 8px; border-radius:6px; font-size:12px;">
+            ${unit.labelMain}
+          </div>
+          <div class="cell-week-range">${unit.labelSub}</div>
+          ${unit.isToday ? '<div class="today-tag" style="bottom:1px;">ESTE MES</div>' : ''}
+        </div>
+      `;
+    }
   }
 
-  renderDateHeaderCell(dateObj, width, index) {
-    const dateStr = dateObj.toISOString().split('T')[0];
-    const isToday = dateStr === this.options.todayDateStr;
-    const dayNum = dateObj.getDate();
-    const dayNames = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
-    const monthNames = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
-    
-    const dayName = dayNames[dateObj.getDay()];
-    const monthName = monthNames[dateObj.getMonth()];
-    const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
-
-    return `
-      <div class="timeline-date-cell ${isToday ? 'is-today' : ''} ${isWeekend ? 'is-weekend' : ''}" 
-           style="width: ${width}px;" 
-           data-date="${dateStr}"
-           data-index="${index}">
-        <div class="date-month-badge">${monthName}</div>
-        <div class="date-number ${isToday ? 'today-pill' : ''}">${dayNum}</div>
-        <div class="date-day-name">${dayName}</div>
-        ${isToday ? '<div class="today-tag">HOY</div>' : ''}
-      </div>
-    `;
-  }
-
-  renderTrackRow(track, dates, colWidth, trackIndex = 0) {
+  renderTrackRow(track, units, colWidth, trackIndex = 0) {
     const isProject = track.type === 'project';
-    const totalWidth = dates.length * colWidth;
+    const totalWidth = units.length * colWidth;
 
-    const trackMilestones = this.data.milestones.filter(m => {
+    const trackMilestones = (this.data.milestones || []).filter(m => {
       if (isProject) {
         if (m.projectId !== track.id) return false;
       } else {
@@ -4187,11 +4428,11 @@ class TimelineRenderer {
       return true;
     });
 
-    const connectingLineHtml = this.renderConnectingLine(trackMilestones, dates, colWidth, track.color);
+    const connectingLineHtml = this.renderConnectingLine(trackMilestones, units, colWidth, track.color);
 
-    const todayIndex = dates.findIndex(d => d.toISOString().split('T')[0] === this.options.todayDateStr);
-    const todayLineHtml = todayIndex >= 0 ? `
-      <div class="timeline-today-vertical-line" style="left: ${todayIndex * colWidth + (colWidth / 2)}px;"></div>
+    const todayX = this.calculateDateXPosition(this.options.todayDateStr, units, colWidth);
+    const todayLineHtml = todayX >= 0 ? `
+      <div class="timeline-today-vertical-line" style="left: ${todayX}px;"></div>
     ` : '';
 
     return `
@@ -4215,10 +4456,9 @@ class TimelineRenderer {
 
         <div class="timeline-track-lane" style="width: ${totalWidth}px;" data-track-id="${track.id}">
           <div class="track-grid-background">
-            ${dates.map((d, idx) => {
-              const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-              const dStr = d.toISOString().split('T')[0];
-              return `<div class="grid-col ${isWeekend ? 'is-weekend-col' : ''}" style="width: ${colWidth}px;" data-date="${dStr}" data-index="${idx}"></div>`;
+            ${units.map((u, idx) => {
+              const isWk = u.isWeekend;
+              return `<div class="grid-col ${isWk ? 'is-weekend-col' : ''}" style="width: ${colWidth}px;" data-index="${idx}"></div>`;
             }).join('')}
           </div>
 
@@ -4226,7 +4466,7 @@ class TimelineRenderer {
           ${connectingLineHtml}
 
           <div class="track-milestones-layer">
-            ${trackMilestones.map(m => this.renderMilestoneNode(m, dates, colWidth, track.color, trackIndex)).join('')}
+            ${trackMilestones.map(m => this.renderMilestoneNode(m, units, colWidth, track.color, trackIndex)).join('')}
           </div>
         </div>
 
@@ -4234,25 +4474,17 @@ class TimelineRenderer {
     `;
   }
 
-  renderConnectingLine(milestones, dates, colWidth, color) {
+  renderConnectingLine(milestones, units, colWidth, color) {
     if (!milestones || milestones.length < 2) return '';
 
-    const sorted = [...milestones].sort((a, b) => a.date.localeCompare(b.date));
-    const firstDate = sorted[0].date;
-    const lastDate = sorted[sorted.length - 1].date;
+    const sorted = [...milestones].sort((a, b) => normalizeISO(a.date).localeCompare(normalizeISO(b.date)));
+    const firstDate = normalizeISO(sorted[0].date);
+    const lastDate = normalizeISO(sorted[sorted.length - 1].date);
 
-    const minDateStr = dates[0].toISOString().split('T')[0];
-    const maxDateStr = dates[dates.length - 1].toISOString().split('T')[0];
+    const x1 = this.calculateDateXPosition(firstDate, units, colWidth);
+    const x2 = this.calculateDateXPosition(lastDate, units, colWidth);
 
-    if (lastDate < minDateStr || firstDate > maxDateStr) return '';
-
-    const clampedStart = firstDate < minDateStr ? minDateStr : firstDate;
-    const clampedEnd = lastDate > maxDateStr ? maxDateStr : lastDate;
-
-    const x1 = this.calculateDateXPosition(clampedStart, dates, colWidth);
-    const x2 = this.calculateDateXPosition(clampedEnd, dates, colWidth);
-
-    if (x2 <= x1) return '';
+    if (x1 < 0 || x2 < 0 || x2 <= x1) return '';
 
     return `
       <div class="timeline-connecting-line" 
@@ -4261,21 +4493,37 @@ class TimelineRenderer {
     `;
   }
 
-  calculateDateXPosition(dateStr, dates, colWidth) {
-    const index = dates.findIndex(d => d.toISOString().split('T')[0] === dateStr);
-    if (index === -1) {
-      if (dateStr < dates[0].toISOString().split('T')[0]) return 0;
-      return dates.length * colWidth;
+  calculateDateXPosition(dateStr, units, colWidth) {
+    if (!dateStr || !units || units.length === 0) return -1;
+    const iso = normalizeISO(dateStr);
+    const mode = this.options.scaleMode || 'dias';
+
+    if (mode === 'dias') {
+      const idx = units.findIndex(u => u.dateStr === iso);
+      if (idx === -1) return -1;
+      return (idx * colWidth) + (colWidth / 2);
+    } else if (mode === 'semanas') {
+      const idx = units.findIndex(u => iso >= u.startDateStr && iso <= u.endDateStr);
+      if (idx === -1) return -1;
+      const d = new Date(iso + 'T00:00:00');
+      const dayOfWeek = (d.getDay() + 6) % 7; // Lunes=0, Domingo=6
+      return (idx * colWidth) + ((dayOfWeek + 0.5) / 7.0) * colWidth;
+    } else if (mode === 'meses') {
+      const idx = units.findIndex(u => iso >= u.startDateStr && iso <= u.endDateStr);
+      if (idx === -1) return -1;
+      const d = new Date(iso + 'T00:00:00');
+      const dayNum = d.getDate();
+      const totalDays = units[idx].daysInMonth || 30;
+      return (idx * colWidth) + ((dayNum - 0.5) / totalDays) * colWidth;
     }
-    return (index * colWidth) + (colWidth / 2);
+
+    return -1;
   }
 
-  renderMilestoneNode(milestone, dates, colWidth, projectColor, trackIndex = 0) {
-    const mIso = normalizeISO(milestone.date);
-    const index = dates.findIndex(d => d.toISOString().split('T')[0] === mIso);
-    if (index === -1) return '';
+  renderMilestoneNode(milestone, units, colWidth, projectColor, trackIndex = 0) {
+    const x = this.calculateDateXPosition(milestone.date, units, colWidth);
+    if (x < 0) return '';
 
-    const x = (index * colWidth) + (colWidth / 2);
     const conflicts = this.data.milestoneConflictMap.get(milestone.id) || [];
     const hasConflict = conflicts.length > 0;
 
@@ -4286,17 +4534,10 @@ class TimelineRenderer {
     const member = this.data.members.find(m => m.id === milestone.responsibleId);
     const stage = this.data.stages.find(s => s.id === milestone.stageId);
 
-    // Ajuste inteligente: si está en las 2 primeras filas, abrir hacia abajo para evitar que el header de fechas lo tape
     let verticalClass = trackIndex <= 1 ? 'tooltip-open-down' : '';
-
-    // Ajuste horizontal: evitar desbordamiento en bordes izquierdo y derecho
     let tooltipAlignClass = '';
-    if (index <= 2) {
+    if (x < 150) {
       tooltipAlignClass = 'tooltip-align-left';
-    } else if (index >= dates.length - 3) {
-      tooltipAlignClass = 'tooltip-align-right';
-    } else if (index >= dates.length - 2) {
-      tooltipAlignClass = 'tooltip-align-right';
     }
 
     const statusClass = `status-${milestone.status || 'programado'}`;
@@ -4306,7 +4547,7 @@ class TimelineRenderer {
            style="left: ${x}px;"
            data-milestone-id="${milestone.id}"
            draggable="true"
-           title="Arrastra para mover de fecha o haz clic para editar">
+           title="Arrastra para mover de fecha o haz clic para ver ficha">
         
         <div class="milestone-symbol-badge" 
              style="background-color: ${symbolColor}; color: #ffffff;"
@@ -4323,7 +4564,7 @@ class TimelineRenderer {
           <span class="label-sub">${escapeHtml(this.truncate(milestone.name, 18))}</span>
         </div>
 
-        <!-- Tooltip Interactivo -->
+        <!-- Tooltip Interactivo en Formato DD/MM/AAAA -->
         <div class="timeline-tooltip ${tooltipAlignClass} ${verticalClass}">
           <div class="tooltip-header" style="border-left: 3px solid ${projectColor};">
             <span class="tooltip-type-pill" style="background: ${symbolColor}22; color: ${symbolColor};">
@@ -4341,7 +4582,7 @@ class TimelineRenderer {
             </div>
             <div class="tooltip-row">
               <span class="t-label">Fecha:</span>
-              <span class="t-value">${formatDateDDMMYYYY(milestone.date)} ${milestone.timeStart ? `(${escapeHtml(milestone.timeStart)} - ${escapeHtml(milestone.timeEnd || '?')})` : ''}</span>
+              <span class="t-value"><strong>${formatDateDDMMYYYY(milestone.date)}</strong> ${milestone.timeStart ? `(${escapeHtml(milestone.timeStart)} - ${escapeHtml(milestone.timeEnd || '?')})` : ''}</span>
             </div>
             ${stage ? `
             <div class="tooltip-row">
@@ -4414,7 +4655,7 @@ class TimelineRenderer {
 
   getVisibleTracks() {
     if (this.options.viewMode === 'persona') {
-      let members = [...this.data.members];
+      let members = [...(this.data.members || [])];
       if (this.options.activeMemberId) {
         members = members.filter(m => m.id === this.options.activeMemberId);
       }
@@ -4427,14 +4668,14 @@ class TimelineRenderer {
         type: 'member',
         name: m.name,
         role: m.role,
-        code: m.role.split(' ')[0],
+        code: m.role ? m.role.split(' ')[0] : 'PROF',
         submeta: m.baseLocation,
         color: m.color || '#3B82F6',
         commune: m.baseLocation
       }));
     }
 
-    let projects = [...this.data.projects];
+    let projects = [...(this.data.projects || [])];
 
     if (this.options.viewMode === 'proyecto' && this.options.activeProjectId) {
       projects = projects.filter(p => p.id === this.options.activeProjectId);
@@ -4484,13 +4725,13 @@ class TimelineRenderer {
     `;
   }
 
-  setupInteractivity(dates, colWidth) {
+  setupInteractivity(units, colWidth) {
     const viewport = document.getElementById('timelineViewport');
     if (!viewport) return;
 
     // 1. Panning horizontal con ratón
     viewport.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.timeline-milestone-item') || e.target.closest('button')) return;
+      if (e.target.closest('.timeline-milestone-item') || e.target.closest('button') || e.target.closest('input')) return;
       this.dragState.isDown = true;
       viewport.classList.add('is-dragging');
       this.dragState.startX = e.pageX - viewport.offsetLeft;
@@ -4515,7 +4756,7 @@ class TimelineRenderer {
       viewport.scrollLeft = this.dragState.scrollLeft - walk;
     });
 
-    // 2. Drag & Drop Robusto de Hitos sobre el tablero
+    // 2. Drag & Drop de Hitos
     const milestoneItems = viewport.querySelectorAll('.timeline-milestone-item');
     milestoneItems.forEach(node => {
       node.addEventListener('dragstart', (e) => {
@@ -4533,43 +4774,40 @@ class TimelineRenderer {
       });
     });
 
-    // Zonas receptoras de drop: Toda la pista del proyecto (.timeline-track-lane) y el encabezado
+    // 3. Drop sobre cualquier punto de la pista horizontal del proyecto
     const dropAreas = viewport.querySelectorAll('.timeline-track-lane, .timeline-header-dates-track');
     dropAreas.forEach(area => {
       area.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-
-        const rect = area.getBoundingClientRect();
-        const clientX = e.clientX - rect.left;
-        const dayIndex = Math.floor(clientX / colWidth);
-        if (dayIndex >= 0 && dayIndex < dates.length) {
-          viewport.querySelectorAll('.drop-target-active').forEach(el => el.classList.remove('drop-target-active'));
-          const targetCell = viewport.querySelector(`.timeline-date-cell[data-index="${dayIndex}"]`);
-          if (targetCell) targetCell.classList.add('drop-target-active');
-        }
-      });
-
-      area.addEventListener('dragleave', (e) => {
-        if (e.target === area) {
-          viewport.querySelectorAll('.drop-target-active').forEach(el => el.classList.remove('drop-target-active'));
-        }
       });
 
       area.addEventListener('drop', (e) => {
         e.preventDefault();
-        viewport.querySelectorAll('.drop-target-active').forEach(el => el.classList.remove('drop-target-active'));
-
         const mId = e.dataTransfer.getData('text/plain') || this.draggedMilestoneId;
         if (!mId) return;
 
         const rect = area.getBoundingClientRect();
         const clientX = e.clientX - rect.left;
-        const dayIndex = Math.floor(clientX / colWidth);
-        if (dayIndex >= 0 && dayIndex < dates.length) {
-          const targetDate = dates[dayIndex].toISOString().split('T')[0];
-          console.log(`Drop ejecutado en ${targetDate} para hito ${mId}`);
-          window.timelineApp.rescheduleMilestone(mId, targetDate);
+        const unitIdx = Math.floor(clientX / colWidth);
+
+        if (unitIdx >= 0 && unitIdx < units.length) {
+          const unit = units[unitIdx];
+          let targetDate = '';
+          const mode = this.options.scaleMode || 'dias';
+
+          if (mode === 'dias') {
+            targetDate = unit.dateStr;
+          } else if (mode === 'semanas') {
+            targetDate = unit.startDateStr;
+          } else if (mode === 'meses') {
+            targetDate = unit.startDateStr;
+          }
+
+          if (targetDate) {
+            console.log(`Drop ejecutado en ${targetDate} para hito ${mId}`);
+            window.timelineApp.rescheduleMilestone(mId, targetDate);
+          }
         }
       });
     });
@@ -4579,29 +4817,39 @@ class TimelineRenderer {
     const viewport = document.getElementById('timelineViewport');
     if (!viewport) return;
 
-    const iso = normalizeISO(targetDateStr);
-    const cell = viewport.querySelector(`[data-date="${iso}"]`);
-    if (cell) {
-      const cellLeft = cell.offsetLeft;
-      const cellWidth = cell.offsetWidth;
-      const viewportWidth = viewport.offsetWidth;
+    const iso = normalizeISO(targetDateStr || this.options.todayDateStr);
+    const units = this.generateTimeUnits();
+    const colWidth = this.calculateColumnWidth();
+    const mode = this.options.scaleMode || 'dias';
+
+    let targetIdx = -1;
+    if (mode === 'dias') {
+      targetIdx = units.findIndex(u => u.dateStr === iso);
+    } else if (mode === 'semanas') {
+      targetIdx = units.findIndex(u => iso >= u.startDateStr && iso <= u.endDateStr);
+    } else if (mode === 'meses') {
+      targetIdx = units.findIndex(u => iso >= u.startDateStr && iso <= u.endDateStr);
+    }
+
+    if (targetIdx >= 0) {
+      // Posicionar exactamente al lado izquierdo como primer día/semana visible
+      const targetLeft = targetIdx * colWidth;
       viewport.scrollTo({
-        left: cellLeft - (viewportWidth / 2) + (cellWidth / 2),
+        left: targetLeft,
         behavior: 'smooth'
       });
-      cell.classList.add('flash-highlight');
-      setTimeout(() => cell.classList.remove('flash-highlight'), 1800);
+
+      // Destacar brevemente la columna alineada
+      setTimeout(() => {
+        const cell = viewport.querySelector(`.timeline-date-cell[data-index="${targetIdx}"]`);
+        if (cell) {
+          cell.classList.add('flash-highlight');
+          setTimeout(() => cell.classList.remove('flash-highlight'), 1800);
+        }
+      }, 80);
     }
   }
 }
-
-
-// 4. SUPABASE SERVICE
-/**
- * TIMELINE OS - Supabase Client con Realtime & mapRow Reutilizable (v5.0)
- * Comunicación REST + WebSockets Realtime nativos.
- */
-
 class SupabaseService {
   constructor() {
     this.baseUrl = 'https://ieboeudkcgsdohnklnfr.supabase.co/rest/v1';
@@ -5528,7 +5776,7 @@ class TimelineApp {
   constructor() {
     this.storageKey = 'TIMELINE_OS_STORE_V1';
     this.supabaseConfigKey = 'TIMELINE_OS_SUPABASE_CONFIG';
-    this.todayStr = '2026-09-07';
+    this.todayStr = this.getRealTodayStr();
 
     this.state = {
       projects: [],
@@ -5562,6 +5810,15 @@ class TimelineApp {
 
     this.timelineRenderer = null;
     this.supabaseService = new SupabaseService();
+  }
+
+  
+  getRealTodayStr() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   init() {
@@ -5764,44 +6021,79 @@ class TimelineApp {
     this.timelineRenderer.setDateRange(this.state.currentStartDate, this.state.timescaleDays);
   }
 
+
+  setScaleMode(mode) {
+    if (!['dias', 'semanas', 'meses'].includes(mode)) return;
+    this.state.scaleMode = mode;
+
+    document.querySelectorAll('.btn-timescale-mode').forEach(btn => btn.classList.remove('active'));
+    const btn = document.getElementById('btnScale' + mode.charAt(0).toUpperCase() + mode.slice(1));
+    if (btn) btn.classList.add('active');
+
+    if (this.timelineRenderer) {
+      this.timelineRenderer.setScaleMode(mode);
+    }
+
+    const labels = {
+      dias: 'DÍAS (Detallada)',
+      semanas: 'SEMANAS (Táctica)',
+      meses: 'MESES (Multianual / Más de 1 año)'
+    };
+    this.showToast(`✓ Vista cambiada a: ${labels[mode]}`);
+  }
+
   goToToday() {
-    this.state.currentStartDate = new Date(this.todayStr + 'T00:00:00');
-    this.timelineRenderer.setDateRange(this.state.currentStartDate, this.state.timescaleDays);
-    this.timelineRenderer.scrollToDate(this.todayStr);
-    this.showToast('Línea temporal posicionada en HOY (07 SEP 2026)');
+    this.todayStr = this.getRealTodayStr();
+    this.state.currentStartDate = new Date();
+    if (this.timelineRenderer) {
+      this.timelineRenderer.options.todayDateStr = this.todayStr;
+      this.timelineRenderer.scrollToDate(this.todayStr);
+    }
+    this.showToast(`Línea temporal alineada en HOY (${formatDateDDMMYYYY(this.todayStr)}) al lado izquierdo`);
   }
 
   goToCurrentWeek() {
-    const today = new Date(this.todayStr + 'T00:00:00');
-    const day = today.getDay();
-    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(today.setDate(diff));
-    
-    this.state.currentStartDate = monday;
-    this.state.timescaleDays = 7;
-    this.setTimescale(7);
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(now.setDate(diff));
+    const mondayStr = monday.toISOString().split('T')[0];
+    if (this.timelineRenderer) {
+      this.timelineRenderer.scrollToDate(mondayStr);
+    }
+    this.showToast(`Semana actual (Lunes ${formatDateDDMMYYYY(mondayStr)})`);
   }
 
   goToNextWeek() {
-    const today = new Date(this.todayStr + 'T00:00:00');
-    const day = today.getDay();
-    const nextMonday = new Date(today.setDate(today.getDate() - day + (day === 0 ? -6 : 1) + 7));
-    
-    this.state.currentStartDate = nextMonday;
-    this.state.timescaleDays = 7;
-    this.setTimescale(7);
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1) + 7;
+    const nextMonday = new Date(now.setDate(diff));
+    const nextMondayStr = nextMonday.toISOString().split('T')[0];
+    if (this.timelineRenderer) {
+      this.timelineRenderer.scrollToDate(nextMondayStr);
+    }
+    this.showToast(`Próxima semana (Lunes ${formatDateDDMMYYYY(nextMondayStr)})`);
   }
 
   goToNext15Days() {
-    this.state.currentStartDate = new Date(this.todayStr + 'T00:00:00');
-    this.state.timescaleDays = 15;
-    this.setTimescale(15);
+    const now = new Date();
+    now.setDate(now.getDate() + 15);
+    const dateStr = now.toISOString().split('T')[0];
+    if (this.timelineRenderer) {
+      this.timelineRenderer.scrollToDate(dateStr);
+    }
+    this.showToast(`Avanzado a próximos 15 días (${formatDateDDMMYYYY(dateStr)})`);
   }
 
   goToNextMonth() {
-    this.state.currentStartDate = new Date(this.todayStr + 'T00:00:00');
-    this.state.timescaleDays = 30;
-    this.setTimescale(30);
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const dateStr = nextMonth.toISOString().split('T')[0];
+    if (this.timelineRenderer) {
+      this.timelineRenderer.scrollToDate(dateStr);
+    }
+    this.showToast(`Avanzado a próximo mes (${formatDateDDMMYYYY(dateStr)})`);
   }
 
   goToDate(dateStr) {
@@ -7853,6 +8145,331 @@ class TimelineApp {
     }
   }
 
+// --- IMPORTADOR DE PROYECTO AUTOMATIZADO (ARCHIVO O TEXTO IA) ---
+  openImportProjectModal() {
+    const modal = document.getElementById('importProjectModal');
+    if (!modal) return;
+    const fileInput = document.getElementById('importProjectFileInput');
+    const textArea = document.getElementById('importProjectJsonText');
+    if (fileInput) fileInput.value = '';
+    if (textArea) textArea.value = '';
+    modal.classList.add('is-open');
+  }
+
+  closeImportProjectModal() {
+    const modal = document.getElementById('importProjectModal');
+    if (modal) modal.classList.remove('is-open');
+  }
+
+  downloadProjectTemplate() {
+    const templateData = {
+      "proyecto": {
+        "nombre": "Construcción Parque Fluvial Ribereño",
+        "codigo": "PFR-2026",
+        "cliente": "Municipalidad de Quillota",
+        "mandante": "SECPLAN / MINVU",
+        "tipo": "Espacio Público y Paisajismo",
+        "comuna": "Quillota",
+        "region": "Región de Valparaíso",
+        "color": "#10B981",
+        "fecha_inicio": "2026-09-01",
+        "fecha_termino": "2027-08-31",
+        "avance_porcentaje": 15,
+        "descripcion": "Proyecto integral de parque urbano ribereño con áreas verdes, ciclovía y luminarias solares.",
+        "jefe_proyecto": "Angel Asencio"
+      },
+      "etapas": [
+        {
+          "nombre": "Etapa 1: Diagnóstico y Topografía",
+          "fecha_inicio": "2026-09-01",
+          "duracion_dias": 30,
+          "estado": "en_desarrollo",
+          "responsable": "Pedro Morales"
+        },
+        {
+          "nombre": "Etapa 2: Anteproyecto Arquitectónico",
+          "fecha_inicio": "2026-10-01",
+          "duracion_dias": 45,
+          "estado": "pendiente",
+          "responsable": "Angel Asencio"
+        },
+        {
+          "nombre": "Etapa 3: Diseño de Especialidades e Ingeniería",
+          "fecha_inicio": "2026-11-15",
+          "duracion_dias": 90,
+          "estado": "pendiente",
+          "responsable": "Carlos Soto"
+        },
+        {
+          "nombre": "Etapa 4: Aprobación SECPLAN y Entrega Final",
+          "fecha_inicio": "2027-02-15",
+          "duracion_dias": 60,
+          "estado": "pendiente",
+          "responsable": "María González"
+        }
+      ],
+      "hitos": [
+        {
+          "nombre": "Visita Inicial de Terreno y Levantamiento",
+          "fecha": "2026-09-10",
+          "hora_inicio": "09:30",
+          "hora_fin": "12:30",
+          "tipo": "terreno",
+          "etapa": "Etapa 1: Diagnóstico y Topografía",
+          "responsable": "Pedro Morales",
+          "prioridad": "alta",
+          "lugar": "Quillota",
+          "observaciones": "Reconocimiento de cotas de inundación y bordes de cauce."
+        },
+        {
+          "nombre": "Taller Participación Ciudadana N°1",
+          "fecha": "2026-09-24",
+          "hora_inicio": "18:00",
+          "hora_fin": "20:00",
+          "tipo": "participacion",
+          "etapa": "Etapa 1: Diagnóstico y Topografía",
+          "responsable": "Angel Asencio",
+          "prioridad": "critica",
+          "lugar": "Sede Vecinal Quillota",
+          "observaciones": "Consulta ciudadana vinculante sobre mobiliario y accesibilidad."
+        },
+        {
+          "nombre": "Entrega de Expediente Anteproyecto",
+          "fecha": "2026-11-10",
+          "hora_inicio": "16:00",
+          "hora_fin": "17:00",
+          "tipo": "entrega",
+          "etapa": "Etapa 2: Anteproyecto Arquitectónico",
+          "responsable": "Angel Asencio",
+          "prioridad": "alta",
+          "lugar": "SECPLAN Quillota",
+          "observaciones": "Planimetría 1:200, renders 3D y especificaciones de materiales."
+        },
+        {
+          "nombre": "Cobro Estado de Pago N°1",
+          "fecha": "2026-11-20",
+          "hora_inicio": "11:00",
+          "hora_fin": "12:00",
+          "tipo": "estado_pago",
+          "etapa": "Etapa 2: Anteproyecto Arquitectónico",
+          "responsable": "Angel Asencio",
+          "prioridad": "media",
+          "lugar": "Quillota",
+          "observaciones": "Factura por 25% del monto total del contrato."
+        },
+        {
+          "nombre": "Mesa Técnica de Aprobación Final",
+          "fecha": "2027-04-15",
+          "hora_inicio": "10:00",
+          "hora_fin": "12:00",
+          "tipo": "reunion",
+          "etapa": "Etapa 4: Aprobación SECPLAN y Entrega Final",
+          "responsable": "María González",
+          "prioridad": "critica",
+          "lugar": "Valparaíso / Virtual",
+          "observaciones": "Cierre formal del anteproyecto con mandante."
+        }
+      ]
+    };
+
+    const blob = new Blob([JSON.stringify(templateData, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'plantilla_proyecto_timeline_os.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.showToast('✓ Plantilla JSON descargada');
+  }
+
+  handleImportFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target.result;
+      const textArea = document.getElementById('importProjectJsonText');
+      if (textArea) textArea.value = content;
+      this.showToast(`Archivo "${file.name}" cargado listo para procesar`);
+    };
+    reader.readAsText(file);
+  }
+
+  async processImportProject() {
+    const textArea = document.getElementById('importProjectJsonText');
+    const rawText = textArea ? textArea.value.trim() : '';
+
+    if (!rawText) {
+      alert('Por favor selecciona un archivo JSON o pega el texto en el área designada.');
+      return;
+    }
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (err) {
+      alert(`Error de sintaxis en el JSON: ${err.message}. Asegúrate de que el formato sea válido.`);
+      return;
+    }
+
+    if (!data.proyecto || !data.proyecto.nombre) {
+      alert('El JSON debe contener un objeto "proyecto" con al menos un "nombre". Revisa la plantilla.');
+      return;
+    }
+
+    this.showToast('Procesando e importando proyecto en la nube...');
+
+    // 1. Crear Proyecto
+    const pData = data.proyecto;
+    const prjId = generateUUID();
+    
+    // Resolver responsable
+    let respId = null;
+    if (pData.jefe_proyecto) {
+      const match = this.state.members.find(m => 
+        m.name.toLowerCase().includes(pData.jefe_proyecto.toLowerCase()) || 
+        m.username.toLowerCase() === pData.jefe_proyecto.toLowerCase()
+      );
+      if (match) respId = match.id;
+    }
+    if (!respId && this.state.members.length > 0) respId = this.state.members[0].id;
+
+    const newProject = {
+      id: prjId,
+      code: pData.codigo || `PRJ-${Math.floor(100 + Math.random()*900)}`,
+      name: pData.nombre,
+      client: pData.cliente || 'Mandante Principal',
+      mandante: pData.mandante || pData.cliente || 'Mandante Principal',
+      projectType: pData.tipo || 'Consultoría Urbana',
+      region: pData.region || 'Región de Valparaíso',
+      commune: pData.comuna || 'Quillota',
+      responsibleId: respId,
+      status: 'en_desarrollo',
+      startDate: normalizeISO(pData.fecha_inicio) || this.todayStr,
+      endDate: normalizeISO(pData.fecha_termino) || '2027-12-31',
+      color: pData.color || '#10B981',
+      progress: parseInt(pData.avance_porcentaje || 0, 10),
+      description: pData.descripcion || ''
+    };
+
+    // 2. Crear Etapas
+    const newStages = [];
+    const stageNameMap = new Map();
+
+    if (Array.isArray(data.etapas)) {
+      data.etapas.forEach((stg, idx) => {
+        const stgId = generateUUID();
+        const stgStart = normalizeISO(stg.fecha_inicio) || newProject.startDate;
+        
+        // Calcular fecha término por duración en días o fecha directa
+        let stgEnd = normalizeISO(stg.fecha_termino);
+        if (!stgEnd && stg.duracion_dias) {
+          const dCalc = new Date(stgStart + 'T00:00:00');
+          dCalc.setDate(dCalc.getDate() + parseInt(stg.duracion_dias, 10) - 1);
+          stgEnd = dCalc.toISOString().split('T')[0];
+        }
+        if (!stgEnd) stgEnd = newProject.endDate;
+
+        let stgResp = null;
+        if (stg.responsable) {
+          const match = this.state.members.find(m => 
+            m.name.toLowerCase().includes(stg.responsable.toLowerCase()) || 
+            m.username.toLowerCase() === stg.responsable.toLowerCase()
+          );
+          if (match) stgResp = match.id;
+        }
+
+        const stageObj = {
+          id: stgId,
+          projectId: prjId,
+          name: stg.nombre || `Etapa ${idx + 1}`,
+          sortOrder: idx + 1,
+          startDate: stgStart,
+          endDate: stgEnd,
+          status: stg.estado || 'pendiente',
+          responsibleId: stgResp || newProject.responsibleId
+        };
+
+        newStages.push(stageObj);
+        stageNameMap.set(stageObj.name.toLowerCase().trim(), stgId);
+      });
+    }
+
+    // 3. Crear Hitos
+    const newMilestones = [];
+    if (Array.isArray(data.hitos)) {
+      data.hitos.forEach(mls => {
+        const mlsId = generateUUID();
+        const mlsDate = normalizeISO(mls.fecha) || newProject.startDate;
+
+        // Asociar a etapa si está indicada
+        let assignedStageId = null;
+        if (mls.etapa) {
+          const cleanEtapa = mls.etapa.toLowerCase().trim();
+          assignedStageId = stageNameMap.get(cleanEtapa);
+          if (!assignedStageId) {
+            // Intento de coincidencia parcial
+            for (const [stgName, sId] of stageNameMap.entries()) {
+              if (stgName.includes(cleanEtapa) || cleanEtapa.includes(stgName)) {
+                assignedStageId = sId;
+                break;
+              }
+            }
+          }
+        }
+
+        let mlsResp = null;
+        if (mls.responsable) {
+          const match = this.state.members.find(m => 
+            m.name.toLowerCase().includes(mls.responsable.toLowerCase()) || 
+            m.username.toLowerCase() === mls.responsable.toLowerCase()
+          );
+          if (match) mlsResp = match.id;
+        }
+
+        newMilestones.push({
+          id: mlsId,
+          projectId: prjId,
+          stageId: assignedStageId || null,
+          name: mls.nombre || 'Nuevo Hito',
+          date: mlsDate,
+          timeStart: mls.hora_inicio || null,
+          timeEnd: mls.hora_fin || null,
+          milestoneType: mls.tipo || 'reunion',
+          responsibleId: mlsResp || newProject.responsibleId,
+          status: 'programado',
+          priority: mls.prioridad || 'media',
+          locationOverride: mls.lugar || newProject.commune,
+          observations: mls.observaciones || null
+        });
+      });
+    }
+
+    // Agregar al estado local
+    this.state.projects.push(newProject);
+    this.state.stages.push(...newStages);
+    this.state.milestones.push(...newMilestones);
+
+    // Guardar en la nube (Supabase REST)
+    await this.supabaseService.saveProject(newProject);
+    for (const s of newStages) {
+      await this.supabaseService.saveStage(s);
+    }
+    for (const m of newMilestones) {
+      await this.supabaseService.saveMilestone(m);
+    }
+
+    this.closeImportProjectModal();
+    this.runConflictAnalysis();
+    this.populateFilterDropdowns();
+    this.timelineRenderer.setData(this.getRendererData());
+    this.updateAlertBadges();
+    this.timelineRenderer.scrollToDate(newProject.startDate);
+
+    this.showToast(`✓ Proyecto "${newProject.name}" importado exitosamente (${newStages.length} etapas, ${newMilestones.length} hitos)`);
+  }
+
   showToast(message) {
     const toast = document.getElementById('appToast');
     if (!toast) return;
@@ -7863,7 +8480,8 @@ class TimelineApp {
 }
 
 
-  window.timelineApp = new TimelineApp();
+  
+window.timelineApp = new TimelineApp();
 document.addEventListener('DOMContentLoaded', () => {
   window.timelineApp.init();
 });
