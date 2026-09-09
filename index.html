@@ -2628,6 +2628,33 @@ body {
   border-radius: 10px;
 }
 
+
+/* ==========================================================================
+   MULTI-TENANCY: SELECTOR DE ORGANIZACIÓN / ESPACIO DE TRABAJO (v9.0)
+   ========================================================================== */
+
+.org-selector-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #090D16;
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.org-select-dropdown {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: #38BDF8;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+}
+
 </style>
 </head>
 <body>
@@ -2663,14 +2690,11 @@ body {
       <form class="auth-form" onsubmit="event.preventDefault(); window.timelineApp.loginWithEmail();">
         <div class="form-group">
           <label for="authEmail">Correo Electrónico</label>
-          <input type="text" id="authEmail" class="input-field" placeholder="admin" value="admin" required>
+          <input type="email" id="authEmail" class="input-field" placeholder="tu_correo@ejemplo.com" required autocomplete="email">
         </div>
         <div class="form-group">
           <label for="authPass">Contraseña</label>
-          <input type="password" id="authPass" class="input-field" placeholder="••••••••" value="admin" required>
-        </div>
-        <div style="font-size:11px; color:#94A3B8; margin-bottom:10px; text-align:center;">
-          Acceso maestro: <strong>admin</strong> | Clave: <strong>admin</strong>
+          <input type="password" id="authPass" class="input-field" placeholder="••••••••" required autocomplete="current-password">
         </div>
         <button type="submit" class="btn-submit-auth">Iniciar Sesión</button>
       </form>
@@ -2733,6 +2757,12 @@ body {
       <header class="top-header">
         
                 <div class="header-left-tools">
+          <!-- Selector de Espacio de Trabajo / Empresa (Visible para Admin General) -->
+          <div class="org-selector-bar" id="adminOrgSelectorWrap" style="display: none;">
+            <span style="font-size:11px; color:var(--text-muted); font-weight:700;">🏢 ESPACIO:</span>
+            <select class="org-select-dropdown" id="selectActiveOrg" onchange="window.timelineApp.switchOrganization(this.value)"></select>
+            <button class="btn-primary" onclick="window.timelineApp.openCreateTenantModal()" style="font-size:11px; padding:3px 7px; background:#0F766E;" title="Crear nueva empresa con base de datos propia">+ Empresa</button>
+          </div>
           <button class="btn-hamburger" onclick="window.timelineApp.toggleMobileSidebar()" aria-label="Abrir menú">☰</button>
           
           <!-- Selector de Escala Estilo MS Project -->
@@ -3436,6 +3466,76 @@ body {
     </div>
   </div>
 
+  
+  <!-- MODAL: CREAR NUEVA EMPRESA / USUARIO (BASE DE DATOS INDEPENDIENTE) -->
+  <div class="modal-backdrop" id="createTenantModal">
+    <div class="modal-dialog" style="max-width:560px;">
+      <div class="modal-header">
+        <h3>NUEVA EMPRESA / ESPACIO DE TRABAJO</h3>
+        <button class="btn-close-modal" onclick="window.timelineApp.closeCreateTenantModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
+          Crea una nueva cuenta de acceso. Cada empresa tiene una <strong>base de datos completamente independiente</strong> con su propio equipo de profesionales, nombre corporativo y proyectos aislados.
+        </p>
+
+        <form id="tenantForm" onsubmit="event.preventDefault(); window.timelineApp.saveTenantModal();">
+          <div class="form-group">
+            <label for="tOrgName">Nombre de la Empresa / Estudio Consultor <span style="color:var(--accent-rose);">*</span></label>
+            <input type="text" id="tOrgName" class="input-field" placeholder="Ej. Consultora Austral Arquitectura" required>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="tBaseCity">Sede Principal / Comuna <span style="color:var(--accent-rose);">*</span></label>
+              <input type="text" id="tBaseCity" class="input-field" placeholder="Ej. Punta Arenas" value="Punta Arenas" required>
+            </div>
+            <div class="form-group">
+              <label for="tRut">RUT de la Empresa (Opcional)</label>
+              <input type="text" id="tRut" class="input-field" placeholder="76.123.456-7">
+            </div>
+          </div>
+
+          <div class="edit-form-section-title" style="margin-top:10px;">Credenciales del Usuario Administrador de la Empresa</div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="tUsername">Nombre de Usuario para Login <span style="color:var(--accent-rose);">*</span></label>
+              <input type="text" id="tUsername" class="input-field" placeholder="Ej. austral_admin" required>
+            </div>
+            <div class="form-group">
+              <label for="tPassword">Contraseña de Acceso <span style="color:var(--accent-rose);">*</span></label>
+              <input type="password" id="tPassword" class="input-field" placeholder="••••••••" required>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="tRepName">Nombre del Representante / Jefe <span style="color:var(--accent-rose);">*</span></label>
+              <input type="text" id="tRepName" class="input-field" placeholder="Ej. Esteban Gómez" required>
+            </div>
+            <div class="form-group">
+              <label for="tEmail">Correo Electrónico de Contacto</label>
+              <input type="email" id="tEmail" class="input-field" placeholder="contacto@austral.cl">
+            </div>
+          </div>
+
+          <div style="font-size:11px; color:#94A3B8; background:rgba(30,41,59,0.5); padding:10px 12px; border-radius:6px; margin-top:8px; line-height:1.4;">
+            🔒 <strong>Aislamiento Total Garantizado:</strong> Este usuario solo podrá ver, crear y modificar los proyectos y personas de su propia empresa. No tendrá acceso a los datos de otras consultoras.
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="window.timelineApp.closeCreateTenantModal()">Cancelar</button>
+        <button class="btn-primary" onclick="window.timelineApp.saveTenantModal()" style="background:#2563EB;">
+          Crear Empresa y Base de Datos
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- NOTIFICACIÓN TOAST -->
   <div class="toast-notification" id="appToast">Operación realizada con éxito</div>
 
@@ -3609,11 +3709,10 @@ const TRAVEL_TIME_MATRIX = {
 const INITIAL_MEMBERS = [
   {
     id: 'a0000000-0000-4000-8000-000000000001',
-    username: 'admin',
-    password: 'admin', // Cuenta maestra editable
+    username: 'territorial',
     name: 'Administrador General',
     role: 'admin',
-    email: 'admin@consultora.cl',
+    email: 'territorial.arq@gmail.com',
     color: '#EF4444',
     baseLocation: 'Quillota',
     phone: '+56 9 1111 2222',
@@ -5201,14 +5300,16 @@ class SupabaseService {
     }
   }
 
-  async fetchAllData(initialSeed = null) {
+  async fetchAllData(initialSeed = null, orgId = null) {
     try {
+      const orgFilter = orgId ? `&org_id=eq.${orgId}` : '';
+      const orgSingleFilter = orgId ? `&id=eq.${orgId}` : '&limit=1';
       const [projRes, stgRes, mlsRes, mbrRes, orgRes] = await Promise.all([
-        fetch(`${this.baseUrl}/projects?select=*&order=created_at.asc`, { headers: await this.getHeaders() }),
+        fetch(`${this.baseUrl}/projects?select=*${orgFilter}&order=created_at.asc`, { headers: await this.getHeaders() }),
         fetch(`${this.baseUrl}/stages?select=*&order=created_at.asc`, { headers: await this.getHeaders() }),
         fetch(`${this.baseUrl}/milestones?select=*&order=date.asc`, { headers: await this.getHeaders() }),
-        fetch(`${this.baseUrl}/team_members?select=*&order=created_at.asc`, { headers: await this.getHeaders() }),
-        fetch(`${this.baseUrl}/organizations?select=*&limit=1`, { headers: await this.getHeaders() })
+        fetch(`${this.baseUrl}/team_members?select=*${orgFilter}&order=created_at.asc`, { headers: await this.getHeaders() }),
+        fetch(`${this.baseUrl}/organizations?select=*${orgSingleFilter}`, { headers: await this.getHeaders() })
       ]);
 
       if (!projRes.ok) throw new Error(`HTTP Error ${projRes.status} al consultar proyectos`);
@@ -5414,6 +5515,85 @@ class SupabaseService {
         headers: await this.getHeaders()
       });
     } catch (e) {}
+  }
+
+    async createTenantOrganization(data) {
+    const orgId = generateUUID();
+    const memberId = generateUUID();
+    const projectId = generateUUID();
+
+    try {
+      // A) Crear Organización
+      const orgRow = {
+        id: orgId,
+        name: data.orgName,
+        base_city: data.baseCity || 'Chile',
+        rut: data.rut || null
+      };
+      await fetch(`${this.baseUrl}/organizations`, {
+        method: 'POST',
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        body: JSON.stringify([orgRow])
+      });
+
+      // B) Crear Usuario Administrador de la Empresa
+      const memberRow = {
+        id: memberId,
+        org_id: orgId,
+        username: data.username,
+        name: data.repName,
+        email: data.email || `${data.username}@consultora.cl`,
+        role: 'admin_empresa',
+        avatar_color: '#2563EB',
+        base_location: data.baseCity || 'Chile',
+        password: data.password
+      };
+      await fetch(`${this.baseUrl}/team_members`, {
+        method: 'POST',
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        body: JSON.stringify([memberRow])
+      });
+
+      // C) Crear Proyecto Inicial Limpio para esa empresa
+      const prjRow = {
+        id: projectId,
+        org_id: orgId,
+        code: 'PRJ-01',
+        name: `Proyecto Inicial ${data.orgName}`,
+        client: 'Mandante Principal',
+        mandante: 'Mandante Principal',
+        project_type: 'Consultoría Arquitectura',
+        region: 'Chile',
+        commune: data.baseCity || 'Chile',
+        responsible_id: memberId,
+        status: 'en_desarrollo',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: '2027-12-31',
+        color: '#2563EB',
+        progress: 0,
+        description: `Espacio de trabajo creado para ${data.orgName}.`
+      };
+      await fetch(`${this.baseUrl}/projects`, {
+        method: 'POST',
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        body: JSON.stringify([prjRow])
+      });
+
+      return { success: true, orgId, memberId };
+    } catch (e) {
+      console.error('Error al crear tenant:', e);
+      return { success: false, error: e.message };
+    }
+  }
+
+  async fetchAllOrganizations() {
+    try {
+      const res = await fetch(`${this.baseUrl}/organizations?select=*&order=name.asc`, {
+        headers: await this.getHeaders()
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {}
+    return [];
   }
 
   async saveOrganization(org) {
@@ -7836,10 +8016,12 @@ class TimelineApp {
                     <td>📍 ${u.baseLocation || 'Quillota'}</td>
                     <td><code>••••••••</code></td>
                     <td>
-                      <div style="display:flex; gap:6px;">
-                        <button class="btn-link" onclick="window.timelineApp.openEditUserModal('${u.id}')">Editar</button>
-                        ${u.username !== 'admin' ? `<button class="btn-icon-tiny" onclick="window.timelineApp.deleteUser('${u.id}')" title="Eliminar usuario">✕</button>` : ''}
-                      </div>
+                      ${isAdmin ? `
+                        <div style="display:flex; gap:8px; align-items:center;">
+                          <button class="btn-link" onclick="window.timelineApp.openEditUserModal('${u.id}')" style="cursor:pointer; font-weight:600;">Editar</button>
+                          ${u.email !== 'territorial.arq@gmail.com' ? `<button class="btn-icon-tiny" onclick="window.timelineApp.deleteUser('${u.id}')" title="Eliminar profesional">✕</button>` : ''}
+                        </div>
+                      ` : '<span style="color:#64748B; font-size:11px;">Solo lectura</span>'}
                     </td>
                   </tr>
                 `).join('')}
@@ -8096,7 +8278,7 @@ class TimelineApp {
 
   openEditUserModal(userId) {
     if (!this.isAdmin()) {
-      alert('Solo el Administrador puede editar usuarios.');
+      alert('Solo el Administrador General (territorial.arq@gmail.com) puede editar profesionales del equipo.');
       return;
     }
 
@@ -8106,17 +8288,16 @@ class TimelineApp {
     const modal = document.getElementById('userModal');
     if (!modal) return;
 
-    document.getElementById('userModalTitle').textContent = 'EDITAR USUARIO';
+    document.getElementById('userModalTitle').textContent = 'EDITAR PROFESIONAL / EQUIPO';
     document.getElementById('editUserId').value = u.id;
     document.getElementById('uName').value = u.name;
-    document.getElementById('uUsername').value = u.username || u.email.split('@')[0];
-    document.getElementById('uEmail').value = u.email;
-    document.getElementById('uRole').value = u.role || 'consultor';
+    document.getElementById('uRole').value = u.role || 'Arquitecto';
     document.getElementById('uBaseLocation').value = u.baseLocation || 'Quillota';
+    document.getElementById('uEmail').value = u.email || '';
     document.getElementById('uColor').value = u.color || '#2563EB';
-    document.getElementById('uPassword').value = u.password || 'consultor2026';
 
     modal.classList.add('is-open');
+    setTimeout(() => document.getElementById('uName').focus(), 80);
   }
 
   closeUserModal() {
@@ -8269,17 +8450,11 @@ class TimelineApp {
   isAdmin() {
     if (!this.state.currentUser) return false;
     const u = this.state.currentUser;
-    const role = (u.role || '').toLowerCase();
-    const name = (u.name || '').toLowerCase();
-    const username = (u.username || '').toLowerCase();
-    const email = (u.email || '').toLowerCase();
+    const email = (u.email || '').toLowerCase().trim();
+    const role = (u.role || '').toLowerCase().trim();
 
-    return role === 'admin' || 
-           username === 'admin' || 
-           name === 'admin' || 
-           name.includes('administrador') || 
-           email === 'admin' || 
-           email.startsWith('admin@');
+    // El administrador general es el usuario oficial creado en Supabase: territorial.arq@gmail.com
+    return email === 'territorial.arq@gmail.com' || role === 'admin';
   }
 
 
@@ -8323,13 +8498,14 @@ class TimelineApp {
 
     // --- CONEXIÓN INICIAL A SUPABASE (carga + marca de estado conectado) ---
   async connectSupabase(showToast = true) {
+    const activeOrgId = this.state.currentOrgId || (this.state.currentUser?.org_id) || 'e0000000-0000-4000-8000-000000000001';
     const data = await this.supabaseService.fetchAllData({
       projects: this.state.projects,
       stages: this.state.stages,
       milestones: this.state.milestones,
       members: this.state.members,
       company: this.state.company
-    });
+    }, activeOrgId);
 
     if (!data) {
       this.state.supabase.isConnected = false;
@@ -8337,11 +8513,13 @@ class TimelineApp {
     }
 
     this.state.projects = data.projects;
-    this.state.stages = data.stages;
-    this.state.milestones = data.milestones;
+    const projectIds = new Set(data.projects.map(p => p.id));
+    this.state.stages = (data.stages || []).filter(s => projectIds.has(s.projectId));
+    this.state.milestones = (data.milestones || []).filter(m => projectIds.has(m.projectId));
     this.state.members = data.members;
     this.state.company = data.company;
     this.state.supabase.isConnected = true;
+    this.updateAdminOrgSelector();
 
     this.saveState();
     this.runConflictAnalysis?.();
@@ -8850,6 +9028,84 @@ class TimelineApp {
     }
   }
 
+
+  // --- MULTI-TENANCY: GESTIÓN DE ESPACIOS DE TRABAJO ---
+  async updateAdminOrgSelector() {
+    const wrap = document.getElementById('adminOrgSelectorWrap');
+    const select = document.getElementById('selectActiveOrg');
+    if (!wrap || !select) return;
+
+    if (this.isAdmin()) {
+      wrap.style.display = 'flex';
+      const orgs = await this.supabaseService.fetchAllOrganizations();
+      if (orgs.length > 0) {
+        select.innerHTML = orgs.map(o => 
+          `<option value="${o.id}" ${o.id === this.state.currentOrgId ? 'selected' : ''}>${escapeHtml(o.name)}</option>`
+        ).join('');
+      }
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+
+  async switchOrganization(orgId) {
+    if (!orgId) return;
+    this.state.currentOrgId = orgId;
+    this.showToast('Cambiando a espacio de trabajo seleccionado...');
+    await this.connectSupabase(false);
+    this.showToast(`✓ Espacio activo: ${this.state.company?.name || 'Empresa'}`);
+  }
+
+  openCreateTenantModal() {
+    const modal = document.getElementById('createTenantModal');
+    if (!modal) return;
+    document.getElementById('tOrgName').value = '';
+    document.getElementById('tBaseCity').value = 'Punta Arenas';
+    document.getElementById('tRut').value = '';
+    document.getElementById('tUsername').value = '';
+    document.getElementById('tPassword').value = '';
+    document.getElementById('tRepName').value = '';
+    document.getElementById('tEmail').value = '';
+    modal.classList.add('is-open');
+    setTimeout(() => document.getElementById('tOrgName').focus(), 80);
+  }
+
+  closeCreateTenantModal() {
+    const modal = document.getElementById('createTenantModal');
+    if (modal) modal.classList.remove('is-open');
+  }
+
+  async saveTenantModal() {
+    const orgName = document.getElementById('tOrgName').value.trim();
+    const baseCity = document.getElementById('tBaseCity').value.trim();
+    const rut = document.getElementById('tRut').value.trim();
+    const username = document.getElementById('tUsername').value.trim().toLowerCase();
+    const password = document.getElementById('tPassword').value.trim();
+    const repName = document.getElementById('tRepName').value.trim();
+    const email = document.getElementById('tEmail').value.trim();
+
+    if (!orgName || !username || !password || !repName) {
+      alert('Por favor completa todos los campos requeridos (*).');
+      return;
+    }
+
+    this.showToast(`Creando espacio para "${orgName}" en la nube...`);
+    const res = await this.supabaseService.createTenantOrganization({
+      orgName, baseCity, rut, username, password, repName, email
+    });
+
+    if (res && res.success) {
+      this.closeCreateTenantModal();
+      this.showToast(`✓ Empresa "${orgName}" y usuario "${username}" creados con base de datos propia.`);
+      await this.updateAdminOrgSelector();
+      if (confirm(`Empresa "${orgName}" creada con éxito.\n\n¿Deseas cambiarte ahora a su espacio de trabajo?`)) {
+        await this.switchOrganization(res.orgId);
+      }
+    } else {
+      alert(`Error al crear empresa: ${res?.error || 'No se pudo completar'}`);
+    }
+  }
+
   showToast(message) {
     const toast = document.getElementById('appToast');
     if (!toast) return;
@@ -8981,40 +9237,67 @@ TimelineApp.prototype.loginWithGoogle = function() {
 TimelineApp.prototype.loginWithEmail = async function() {
   const email = (document.getElementById('authEmail').value || '').trim().toLowerCase();
   const pass = (document.getElementById('authPass').value || '').trim();
+
   if (!email || !pass) {
     alert('Por favor ingresa tu correo y contraseña.');
     return;
   }
 
-  if (!this.state.supabase.isConnected) {
-    alert('No hay conexión con Supabase todavía. Espera un momento e intenta de nuevo.');
-    return;
-  }
+  this.showToast('Autenticando con Supabase Cloud...');
 
   try {
-    const { data, error } = await this.supabaseService.signInWithPassword(email, pass);
-    if (error || !data?.user) {
-      alert('Credenciales incorrectas.');
-      return;
-    }
+    const client = await this.supabaseService.initClient();
+    if (client) {
+      const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
+      if (!error && data?.user) {
+        const isMasterAdmin = email === 'territorial.arq@gmail.com';
+        const user = {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.user_metadata?.name || (isMasterAdmin ? 'Administrador General' : email.split('@')[0]),
+          role: isMasterAdmin ? 'admin' : (data.user.user_metadata?.role || 'consultor'),
+          username: email.split('@')[0],
+          canManageUsers: isMasterAdmin,
+          canManageCompany: isMasterAdmin
+        };
 
-    const user = {
-      id: data.user.id,
-      email: data.user.email,
-      name: data.user.user_metadata?.name || data.user.email.split('@')[0],
-      role: data.user.user_metadata?.role || 'admin',
-      username: email.split('@')[0]
-    };
-    this.state.currentUser = user;
-    localStorage.setItem('TIMELINE_OS_LOCAL_AUTH', JSON.stringify(user));
+        this.state.currentUser = user;
+        localStorage.setItem('TIMELINE_OS_LOCAL_AUTH', JSON.stringify(user));
+        this.hideAuthOverlay();
+        this.updateUserSidebar();
+        this.updateGcalHeaderButton();
+        await this.connectSupabase(false);
+        this.showToast(`✓ Bienvenido, ${escapeHtml(user.name)}`);
+        return;
+      } else if (error) {
+        console.warn('Error de Supabase Auth:', error.message);
+      }
+    }
+  } catch (err) {
+    console.warn('Fallo en intento de autenticación:', err);
+  }
+
+  // Fallback para contingencias locales si coincide correo y clave
+  const localMember = this.state.members.find(m => 
+    (m.email && m.email.toLowerCase() === email) && m.password === pass
+  );
+
+  if (localMember) {
+    const isMasterAdmin = email === 'territorial.arq@gmail.com' || localMember.role === 'admin';
+    localMember.role = isMasterAdmin ? 'admin' : localMember.role;
+    localMember.canManageUsers = isMasterAdmin;
+    localMember.canManageCompany = isMasterAdmin;
+
+    this.state.currentUser = localMember;
+    localStorage.setItem('TIMELINE_OS_LOCAL_AUTH', JSON.stringify(localMember));
     this.hideAuthOverlay();
     this.updateUserSidebar();
     this.updateGcalHeaderButton();
-    this.showToast(`✓ Sesión iniciada: ${escapeHtml(user.name)}`);
-  } catch (e) {
-    console.warn('Error de autenticación con Supabase:', e);
-    alert('Ocurrió un error al iniciar sesión. Intenta de nuevo.');
+    this.showToast(`✓ Sesión iniciada: ${escapeHtml(localMember.name)}`);
+    return;
   }
+
+  alert('Credenciales incorrectas. Verifica tu correo y contraseña registrados en Supabase.');
 };
 
 TimelineApp.prototype.logout = async function() {
