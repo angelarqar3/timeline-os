@@ -4794,6 +4794,7 @@ class TimelineRenderer {
   }
 
   renderTaskBar(m, units, colWidth, projectColor, trackIndex = 0) {
+    const member = (this.data.members || []).find(u => u.id === m.responsibleId);
     const startIso = normalizeISO(m.date);
     const endIso = normalizeISO(m.endDate);
     const x1 = this.calculateDateXPosition(startIso, units, colWidth);
@@ -4822,6 +4823,7 @@ class TimelineRenderer {
         <div class="task-bar-content">
           <span class="task-bar-color-dot" style="background:${barBorderColor};"></span>
           <span class="task-bar-name">${escapeHtml(m.name)}</span>
+          ${member ? `<span class="task-bar-resp-tag" style="font-size:10px; color:#93C5FD; background:rgba(59,130,246,0.18); padding:1px 5px; border-radius:3px; flex-shrink:0;">👤 ${escapeHtml(member.name)}</span>` : ''}
           <span class="task-bar-duration-badge">⏱️ ${diffDays}d</span>
         </div>
       </div>
@@ -4870,6 +4872,7 @@ class TimelineRenderer {
         <div class="milestone-subtag" style="color: ${hasConflict ? '#F87171' : 'var(--text-secondary)'};">
           ${milestone.timeStart ? `<span class="time-sub">${escapeHtml(milestone.timeStart)}</span>` : ''}
           <span class="label-sub">${escapeHtml(this.truncate(milestone.name, 18))}</span>
+          ${member ? `<span style="font-size:9px; color:#93C5FD; opacity:0.85; max-width:85px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">👤 ${escapeHtml(member.name.split(' ')[0])}</span>` : ''}
         </div>
 
         <!-- Tooltip Interactivo en Formato DD/MM/AAAA -->
@@ -5348,6 +5351,18 @@ class SupabaseService {
       console.error('Error al descargar datos de Supabase vía REST:', err);
       return null;
     }
+  }
+
+  async updateMilestone(m) {
+    return await this.saveMilestone(m);
+  }
+
+  async updateProject(p) {
+    return await this.saveProject(p);
+  }
+
+  async updateStage(s) {
+    return await this.saveStage(s);
   }
 
   async saveMilestone(m) {
@@ -6806,10 +6821,21 @@ class TimelineApp {
 
     if (this.state.supabase.isConnected) {
       try {
-        await this.supabaseService.updateMilestone(m);
+        const res = await this.supabaseService.saveMilestone(m);
+        if (res && res.error) {
+          this.showToast(`Error al guardar en Supabase: ${res.error}`, 'error');
+        } else {
+          this.showToast(`✓ Hito/Tarea "${m.name}" guardado y sincronizado en la nube`);
+        }
       } catch (err) {
         console.warn('Error al actualizar hito en Supabase:', err);
       }
+    }
+
+    // Si el inspector lateral está abierto para este hito, refrescarlo en vivo con los nuevos datos
+    const inspectorEl = document.getElementById('milestoneInspectorOverlay');
+    if (inspectorEl && inspectorEl.style.display !== 'none' && this.state.activeInspectorMilestoneId === m.id) {
+      this.openMilestoneInspector(m.id);
     }
   }
 
@@ -6955,7 +6981,12 @@ class TimelineApp {
 
     if (this.state.supabase.isConnected) {
       try {
-        await this.supabaseService.updateProject(p);
+        const res = await this.supabaseService.saveProject(p);
+        if (res && res.error) {
+          this.showToast(`Error al guardar proyecto en Supabase: ${res.error}`, 'error');
+        } else {
+          this.showToast(`✓ Proyecto "${p.name}" actualizado en la nube`);
+        }
       } catch (err) {
         console.warn('Error al actualizar proyecto en Supabase:', err);
       }
@@ -7033,6 +7064,7 @@ class TimelineApp {
   openMilestoneInspector(milestoneId) {
     const m = this.state.milestones.find(x => x.id === milestoneId);
     if (!m) return;
+    this.state.activeInspectorMilestoneId = milestoneId;
 
     const prj = this.state.projects.find(p => p.id === m.projectId) || { name: 'Proyecto', code: 'PRJ', color: '#3B82F6' };
     const member = this.state.members.find(u => u.id === m.responsibleId);
@@ -8614,6 +8646,13 @@ if (!data) {
 
     if (this.state.currentView === 'project-detail' && this.state.activeProjectId) {
       this.renderProjectDetailView(this.state.activeProjectId);
+    }
+
+    if (table === 'milestones') {
+      const insp = document.getElementById('milestoneInspectorOverlay');
+      if (insp && insp.style.display !== 'none' && this.state.activeInspectorMilestoneId === row.id) {
+        this.openMilestoneInspector(row.id);
+      }
     }
   }
 
