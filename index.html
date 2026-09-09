@@ -2502,7 +2502,7 @@ body {
         <div class="logo-symbol">T</div>
         <div>
           <div class="logo-text">TIMELINE <span>OS</span></div>
-          <div class="version-badge-pill">v5.0 Realtime Live</div>
+          <div class="version-badge-pill">v4.0 Cloud Direct</div>
         </div>
       </div>
 
@@ -3089,11 +3089,11 @@ body {
   <div class="milestone-inspector-overlay" id="milestoneInspectorOverlay"></div>
 
   
-  <!-- MODAL: CREAR / EDITAR USUARIO (EXCLUSIVO ADMIN) -->
+  <!-- MODAL: AGREGAR / EDITAR PROFESIONAL (RECURSOS HUMANOS) -->
   <div class="modal-backdrop" id="userModal" onclick="if(event.target === this) window.timelineApp.closeUserModal()">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 id="userModalTitle">USUARIO DEL EQUIPO</h3>
+        <h3 id="userModalTitle">NUEVO PROFESIONAL / EQUIPO</h3>
         <button class="btn-close-modal" onclick="window.timelineApp.closeUserModal()">&times;</button>
       </div>
 
@@ -3102,53 +3102,41 @@ body {
           <input type="hidden" id="editUserId">
 
           <div class="form-group">
-            <label for="uName">Nombre Completo <span style="color:var(--accent-rose);">*</span></label>
-            <input type="text" id="uName" class="input-field" placeholder="Ej. Rodrigo Silva" required>
+            <label for="uName">Nombre del Profesional <span style="color:var(--accent-rose);">*</span></label>
+            <input type="text" id="uName" class="input-field" placeholder="Ej. Constanza Valenzuela" required>
           </div>
 
           <div class="form-row-2">
             <div class="form-group">
-              <label for="uUsername">Nombre de Usuario / Login <span style="color:var(--accent-rose);">*</span></label>
-              <input type="text" id="uUsername" class="input-field" placeholder="Ej. rsilva o admin" required>
-            </div>
-            <div class="form-group">
-              <label for="uRole">Rol en el Equipo</label>
-              <select id="uRole" class="input-field">
-                <option value="consultor">Consultor / Arquitecto</option>
-                <option value="ingeniero">Ingeniero / Especialista</option>
-                <option value="topografo">Topógrafo / Terreno</option>
-                <option value="admin">Administrador General</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="uEmail">Correo Electrónico <span style="color:var(--accent-rose);">*</span></label>
-              <input type="email" id="uEmail" class="input-field" placeholder="rsilva@consultora.cl" required>
+              <label for="uRole">Especialidad / Cargo <span style="color:var(--accent-rose);">*</span></label>
+              <input type="text" id="uRole" class="input-field" placeholder="Ej. Arquitecta, Calculista, Topógrafo" value="Arquitecto" required>
             </div>
             <div class="form-group">
               <label for="uBaseLocation">Comuna / Sede Base</label>
-              <input type="text" id="uBaseLocation" class="input-field" placeholder="Ej. Quillota, Valparaíso" value="Quillota">
+              <input type="text" id="uBaseLocation" class="input-field" placeholder="Ej. Quillota, Valparaíso, Santiago" value="Quillota">
             </div>
           </div>
 
           <div class="form-row-2">
             <div class="form-group">
-              <label for="uPassword">Contraseña de Acceso <span style="color:var(--accent-rose);">*</span></label>
-              <input type="password" id="uPassword" class="input-field" placeholder="••••••••" required>
+              <label for="uEmail">Correo de Contacto</label>
+              <input type="email" id="uEmail" class="input-field" placeholder="contacto@consultora.cl">
             </div>
             <div class="form-group">
               <label for="uColor">Color Identificador</label>
               <input type="color" id="uColor" class="input-field" value="#2563EB" style="height:42px; padding:2px 4px; cursor:pointer;">
             </div>
           </div>
+
+          <div style="font-size:11px; color:#94A3B8; background:rgba(30,41,59,0.5); padding:10px 12px; border-radius:6px; margin-top:8px; line-height:1.4;">
+            ℹ️ Este profesional se sumará a los recursos del equipo para asignarle proyectos, etapas e hitos en la línea de tiempo. No requiere credenciales de acceso.
+          </div>
         </form>
       </div>
 
       <div class="modal-footer">
         <button class="btn-secondary" onclick="window.timelineApp.closeUserModal()">Cancelar</button>
-        <button class="btn-primary" onclick="window.timelineApp.saveUserModal()">Guardar Usuario</button>
+        <button class="btn-primary" onclick="window.timelineApp.saveUserModal()">Guardar Profesional</button>
       </div>
     </div>
   </div>
@@ -3200,16 +3188,10 @@ body {
 
 // 0. UTILS & SECURITY (XSS SANITIZATION)
 /**
- * TIMELINE OS - Utilities & Security Helpers
- * Sanitización estricta contra ataques XSS y generador de UUIDs v4.
+ * TIMELINE OS - Utilities & Date Formatting (v5.2)
+ * Formato universal chileno DD/MM/YYYY, sanitización XSS y UUIDs v4.
  */
 
-/**
- * Sanitiza cualquier cadena antes de ser insertada en el DOM vía innerHTML.
- * Previene ataques XSS por inyección de etiquetas, eventos (onerror/onload) o scripts.
- * @param {string|number|null|undefined} str
- * @returns {string} Cadena sanitizada y segura para HTML
- */
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -3220,10 +3202,6 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-/**
- * Generador de UUID v4 estándar compatible con el tipo UUID de PostgreSQL.
- * @returns {string}
- */
 function generateUUID() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -3235,13 +3213,37 @@ function generateUUID() {
   });
 }
 
-/**
- * Trunca texto de forma segura sin romper entidades HTML.
- */
 function truncate(str, len) {
   if (!str) return '';
   const clean = String(str);
   return clean.length > len ? clean.substring(0, len) + '…' : clean;
+}
+
+/**
+ * Normaliza cualquier entrada de fecha (ISO, con timestamp o DD/MM/YYYY) a formato ISO YYYY-MM-DD
+ */
+function normalizeISO(d) {
+  if (!d) return '';
+  const dStr = String(d).trim();
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(dStr)) {
+    const parts = dStr.split('/');
+    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+  }
+  return dStr.split('T')[0].split(' ')[0];
+}
+
+/**
+ * Formatea cualquier fecha al estándar chileno DD/MM/YYYY (ej. 07/09/2026)
+ */
+function formatDateDDMMYYYY(d) {
+  if (!d) return '';
+  const iso = normalizeISO(d);
+  if (!iso || !iso.includes('-')) return String(d);
+  const parts = iso.split('-');
+  if (parts.length === 3) {
+    return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+  }
+  return iso;
 }
 
 
@@ -3738,9 +3740,11 @@ const INITIAL_MILESTONES = [
 
 // 2. CONFLICT ENGINE
 /**
- * TIMELINE OS - Conflict Detection Engine
- * Analizador automático de incompatibilidades temporales, de recursos y territoriales.
+ * TIMELINE OS - Conflict Detection Engine (v5.2 Precisión Chilena)
+ * Normalización estricta de fechas, comparación temporal exacta y formato DD/MM/YYYY.
  */
+
+
 
 
 class ConflictEngine {
@@ -3754,7 +3758,7 @@ class ConflictEngine {
    */
   static analyze(milestones, projects, stages, members) {
     const conflicts = [];
-    const milestoneConflictMap = new Map(); // milestoneId -> array de conflictos
+    const milestoneConflictMap = new Map();
 
     const addConflictToMilestone = (mId, conflict) => {
       if (!mId) return;
@@ -3764,26 +3768,28 @@ class ConflictEngine {
       milestoneConflictMap.get(mId).push(conflict);
     };
 
-    const projectMap = new Map(projects.map(p => [p.id, p]));
-    const stageMap = new Map(stages.map(s => [s.id, s]));
-    const memberMap = new Map(members.map(m => [m.id, m]));
+    const projectMap = new Map((projects || []).map(p => [p.id, p]));
+    const stageMap = new Map((stages || []).map(s => [s.id, s]));
+    const memberMap = new Map((members || []).map(m => [m.id, m]));
 
-    // 1. AGRUPACIÓN POR RESPONSABLE Y FECHA (Conflictos de Persona y Territoriales)
+    // 1. AGRUPACIÓN POR RESPONSABLE Y FECHA (Normalizada YYYY-MM-DD)
     const byMemberAndDate = new Map();
 
-    milestones.forEach(m => {
-      if (!m.responsibleId || !m.date) return;
-      const key = `${m.responsibleId}_${m.date}`;
+    (milestones || []).forEach(m => {
+      const normalizedDate = normalizeISO(m.date);
+      if (!m.responsibleId || !normalizedDate) return;
+      const key = `${m.responsibleId}_${normalizedDate}`;
       if (!byMemberAndDate.has(key)) {
         byMemberAndDate.set(key, []);
       }
-      byMemberAndDate.get(key).push(m);
+      byMemberAndDate.get(key).push({ ...m, date: normalizedDate });
     });
 
     byMemberAndDate.forEach((dayMilestones, key) => {
       if (dayMilestones.length < 2) return;
       const [memberId, dateStr] = key.split('_');
       const member = memberMap.get(memberId) || { name: 'Profesional' };
+      const displayDate = formatDateDDMMYYYY(dateStr);
 
       // Ordenar por hora de inicio si existe
       dayMilestones.sort((a, b) => {
@@ -3804,16 +3810,15 @@ class ConflictEngine {
           // A) CONFLICTO DE PERSONA: Solapamiento horario
           if (m1.timeStart && m2.timeStart) {
             const start1 = this.timeToMinutes(m1.timeStart);
-            const end1 = m1.timeEnd ? this.timeToMinutes(m1.timeEnd) : start1 + 60; // 60m default
+            const end1 = m1.timeEnd ? this.timeToMinutes(m1.timeEnd) : start1 + 60;
             const start2 = this.timeToMinutes(m2.timeStart);
             const end2 = m2.timeEnd ? this.timeToMinutes(m2.timeEnd) : start2 + 60;
 
-            // Hay solapamiento si start1 < end2 && start2 < end1
             if (start1 < end2 && start2 < end1) {
               const conflict = {
                 id: `cnf-per-${m1.id}-${m2.id}`,
                 type: 'persona',
-                title: `Conflicto de persona: ${member.name}`,
+                title: `Colisión horaria: ${member.name} (${displayDate})`,
                 date: dateStr,
                 responsibleId: member.id,
                 responsibleName: member.name,
@@ -3822,22 +3827,21 @@ class ConflictEngine {
                 project1: prj1,
                 project2: prj2,
                 severity: 'critical',
-                description: `${member.name} tiene 2 actividades simultáneas el ${this.formatDate(dateStr)}: "${m1.name}" (${prj1.name}, ${m1.timeStart}-${m1.timeEnd || '?'}) y "${m2.name}" (${prj2.name}, ${m2.timeStart}-${m2.timeEnd || '?'}).`
+                description: `${member.name} tiene 2 actividades simultáneas el ${displayDate}: "${m1.name}" (${prj1.name}, ${m1.timeStart}-${m1.timeEnd || '?'}) y "${m2.name}" (${prj2.name}, ${m2.timeStart}-${m2.timeEnd || '?'}).`
               };
               conflicts.push(conflict);
               addConflictToMilestone(m1.id, conflict);
               addConflictToMilestone(m2.id, conflict);
-              continue; // Ya es conflicto directo, pasar al siguiente par
+              continue;
             }
 
-            // B) CONFLICTO TERRITORIAL: Traslado incompatible entre ubicaciones distintas
+            // B) CONFLICTO TERRITORIAL: Traslado incompatible entre ciudades
             const loc1 = this.resolveLocation(m1, prj1);
             const loc2 = this.resolveLocation(m2, prj2);
 
             if (loc1 && loc2 && loc1.toLowerCase() !== loc2.toLowerCase()) {
               const minTravelMinutes = this.estimateTravelMinutes(loc1, loc2);
               if (minTravelMinutes > 0) {
-                // Intervalo real entre eventos
                 let availableBuffer = 0;
                 if (end1 <= start2) {
                   availableBuffer = start2 - end1;
@@ -3849,7 +3853,7 @@ class ConflictEngine {
                   const conflict = {
                     id: `cnf-ter-${m1.id}-${m2.id}`,
                     type: 'territorial',
-                    title: `Traslado potencialmente incompatible (${loc1} → ${loc2})`,
+                    title: `Traslado inviable (${loc1} → ${loc2}) el ${displayDate}`,
                     date: dateStr,
                     responsibleId: member.id,
                     responsibleName: member.name,
@@ -3858,7 +3862,7 @@ class ConflictEngine {
                     project1: prj1,
                     project2: prj2,
                     severity: 'critical',
-                    description: `${member.name} debe desplazarse de ${loc1} a ${loc2} el ${this.formatDate(dateStr)}. Solo dispone de ${availableBuffer} min libres entre actividades, pero el traslado mínimo estimado es de ${minTravelMinutes} min.`
+                    description: `${member.name} debe trasladarse de ${loc1} a ${loc2} el ${displayDate}. Solo dispone de ${availableBuffer} min libres, pero el tiempo mínimo estimado de viaje es de ${minTravelMinutes} min.`
                   };
                   conflicts.push(conflict);
                   addConflictToMilestone(m1.id, conflict);
@@ -3871,40 +3875,77 @@ class ConflictEngine {
       }
     });
 
-    // 2. CONFLICTO DE ETAPA / PROYECTO: Hito fuera del rango de su etapa o proyecto
-    milestones.forEach(m => {
+    // 2. CONFLICTO DE ETAPA / PROYECTO (Comparación exacta de fechas)
+    (milestones || []).forEach(m => {
       const prj = projectMap.get(m.projectId);
       const stg = stageMap.get(m.stageId);
+      const mDateIso = normalizeISO(m.date);
+      if (!mDateIso) return;
 
-      if (prj && m.date) {
-        if (m.date < prj.startDate || m.date > prj.endDate) {
+      const mDisplayDate = formatDateDDMMYYYY(mDateIso);
+
+      if (prj) {
+        const pStartIso = normalizeISO(prj.startDate);
+        const pEndIso = normalizeISO(prj.endDate);
+
+        if (pStartIso && mDateIso < pStartIso) {
           const conflict = {
-            id: `cnf-prj-${m.id}`,
+            id: `cnf-prj-pre-${m.id}`,
             type: 'etapa',
-            title: `Hito fuera de plazo de proyecto`,
-            date: m.date,
+            title: `Hito anterior al inicio del proyecto`,
+            date: mDateIso,
             milestone1: m,
             project1: prj,
             severity: 'warning',
-            description: `El hito "${m.name}" está programado el ${this.formatDate(m.date)}, fuera de la vigencia del proyecto ${prj.name} (${this.formatDate(prj.startDate)} al ${this.formatDate(prj.endDate)}).`
+            description: `El hito "${m.name}" (${mDisplayDate}) está programado antes de la fecha de inicio del proyecto ${prj.name} (${formatDateDDMMYYYY(pStartIso)}).`
+          };
+          conflicts.push(conflict);
+          addConflictToMilestone(m.id, conflict);
+        } else if (pEndIso && mDateIso > pEndIso) {
+          const conflict = {
+            id: `cnf-prj-post-${m.id}`,
+            type: 'etapa',
+            title: `Hito fuera de plazo de proyecto`,
+            date: mDateIso,
+            milestone1: m,
+            project1: prj,
+            severity: 'warning',
+            description: `El hito "${m.name}" (${mDisplayDate}) excede el plazo contractual de entrega de ${prj.name} (${formatDateDDMMYYYY(pEndIso)}).`
           };
           conflicts.push(conflict);
           addConflictToMilestone(m.id, conflict);
         }
       }
 
-      if (stg && m.date) {
-        if (m.date < stg.startDate || m.date > stg.endDate) {
+      if (stg) {
+        const sStartIso = normalizeISO(stg.startDate);
+        const sEndIso = normalizeISO(stg.endDate);
+
+        if (sStartIso && mDateIso < sStartIso) {
           const conflict = {
-            id: `cnf-stg-${m.id}`,
+            id: `cnf-stg-pre-${m.id}`,
             type: 'etapa',
-            title: `Hito fuera de fechas de etapa`,
-            date: m.date,
+            title: `Hito antes del inicio de etapa`,
+            date: mDateIso,
             milestone1: m,
             stage1: stg,
             project1: prj,
             severity: 'warning',
-            description: `El hito "${m.name}" (${this.formatDate(m.date)}) excede el período asignado a la etapa "${stg.name}" (${this.formatDate(stg.startDate)} al ${this.formatDate(stg.endDate)}).`
+            description: `El hito "${m.name}" (${mDisplayDate}) está antes del inicio de la etapa "${stg.name}" (${formatDateDDMMYYYY(sStartIso)}).`
+          };
+          conflicts.push(conflict);
+          addConflictToMilestone(m.id, conflict);
+        } else if (sEndIso && mDateIso > sEndIso) {
+          const conflict = {
+            id: `cnf-stg-post-${m.id}`,
+            type: 'etapa',
+            title: `Hito posterior al término de etapa`,
+            date: mDateIso,
+            milestone1: m,
+            stage1: stg,
+            project1: prj,
+            severity: 'warning',
+            description: `El hito "${m.name}" (${mDisplayDate}) supera la fecha límite de la etapa "${stg.name}" (${formatDateDDMMYYYY(sEndIso)}).`
           };
           conflicts.push(conflict);
           addConflictToMilestone(m.id, conflict);
@@ -3913,16 +3954,19 @@ class ConflictEngine {
     });
 
     // 3. GENERACIÓN DE ESTADÍSTICAS DEL PANEL DE ALERTAS
-    const today = '2026-09-07';
-    const next7Days = '2026-09-14';
+    const todayIso = '2026-09-07';
+    const next7DaysIso = '2026-09-14';
 
     const personConflicts = conflicts.filter(c => c.type === 'persona').length;
     const territorialConflicts = conflicts.filter(c => c.type === 'territorial').length;
     const stageConflicts = conflicts.filter(c => c.type === 'etapa').length;
 
-    const criticalMilestones = milestones.filter(m => m.priority === 'critica' && m.date >= today).length;
-    const upcomingActivities = milestones.filter(m => m.date >= today && m.date <= next7Days).length;
-    const unassignedActivities = milestones.filter(m => !m.responsibleId && m.date >= today).length;
+    const criticalMilestones = (milestones || []).filter(m => m.priority === 'critica' && normalizeISO(m.date) >= todayIso).length;
+    const upcomingActivities = (milestones || []).filter(m => {
+      const d = normalizeISO(m.date);
+      return d >= todayIso && d <= next7DaysIso;
+    }).length;
+    const unassignedActivities = (milestones || []).filter(m => !m.responsibleId && normalizeISO(m.date) >= todayIso).length;
 
     return {
       conflicts,
@@ -3945,16 +3989,8 @@ class ConflictEngine {
     return (h || 0) * 60 + (m || 0);
   }
 
-  static formatDate(isoDate) {
-    if (!isoDate) return '';
-    const [y, m, d] = isoDate.split('-');
-    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    return `${d} ${months[parseInt(m, 10) - 1]} ${y}`;
-  }
-
   static resolveLocation(milestone, project) {
     if (milestone.locationOverride && !milestone.locationOverride.includes('Virtual') && !milestone.locationOverride.includes('Remoto')) {
-      // Si tiene override (ej. "Valparaíso")
       return milestone.locationOverride.split('/')[0].trim();
     }
     if (project && project.commune) {
@@ -3975,7 +4011,6 @@ class ConflictEngine {
     if (TRAVEL_TIME_MATRIX[key1]) return TRAVEL_TIME_MATRIX[key1];
     if (TRAVEL_TIME_MATRIX[key2]) return TRAVEL_TIME_MATRIX[key2];
 
-    // Estimación general si son ciudades distintas en Chile: mínimo 60 minutos
     return 90;
   }
 }
@@ -4035,12 +4070,16 @@ class TimelineRenderer {
   render() {
     if (!this.container || !this.data) return;
 
+    // Lienzo temporal continuo (90 días al pasado y 180 días al futuro)
     const dates = [];
-    const baseTime = new Date(this.options.startDate);
-    baseTime.setHours(0, 0, 0, 0);
+    const baseCenter = new Date(this.options.startDate || this.options.todayDateStr + 'T00:00:00');
+    baseCenter.setHours(0, 0, 0, 0);
 
-    for (let i = 0; i < this.options.daysCount; i++) {
-      const d = new Date(baseTime);
+    const pastBuffer = 90; // 90 días hacia atrás para navegación infinita al pasado
+    const futureBuffer = Math.max(180, this.options.daysCount + 90);
+
+    for (let i = -pastBuffer; i <= futureBuffer; i++) {
+      const d = new Date(baseCenter);
       d.setDate(d.getDate() + i);
       dates.push(d);
     }
@@ -4078,6 +4117,17 @@ class TimelineRenderer {
     `;
 
     this.setupInteractivity(dates, colWidth);
+    if (!this.hasScrolledInitial) {
+      setTimeout(() => {
+        const vp = document.getElementById('timelineViewport');
+        const todayIdx = dates.findIndex(d => d.toISOString().split('T')[0] === this.options.todayDateStr);
+        if (vp && todayIdx >= 0) {
+          const todayX = todayIdx * colWidth;
+          vp.scrollLeft = Math.max(0, todayX - 250);
+          this.hasScrolledInitial = true;
+        }
+      }, 50);
+    }
   }
 
   calculateColumnWidth(days) {
@@ -4221,7 +4271,8 @@ class TimelineRenderer {
   }
 
   renderMilestoneNode(milestone, dates, colWidth, projectColor, trackIndex = 0) {
-    const index = dates.findIndex(d => d.toISOString().split('T')[0] === milestone.date);
+    const mIso = normalizeISO(milestone.date);
+    const index = dates.findIndex(d => d.toISOString().split('T')[0] === mIso);
     if (index === -1) return '';
 
     const x = (index * colWidth) + (colWidth / 2);
@@ -4290,7 +4341,7 @@ class TimelineRenderer {
             </div>
             <div class="tooltip-row">
               <span class="t-label">Fecha:</span>
-              <span class="t-value">${escapeHtml(milestone.date)} ${milestone.timeStart ? `(${escapeHtml(milestone.timeStart)} - ${escapeHtml(milestone.timeEnd || '?')})` : ''}</span>
+              <span class="t-value">${formatDateDDMMYYYY(milestone.date)} ${milestone.timeStart ? `(${escapeHtml(milestone.timeStart)} - ${escapeHtml(milestone.timeEnd || '?')})` : ''}</span>
             </div>
             ${stage ? `
             <div class="tooltip-row">
@@ -4528,7 +4579,8 @@ class TimelineRenderer {
     const viewport = document.getElementById('timelineViewport');
     if (!viewport) return;
 
-    const cell = viewport.querySelector(`[data-date="${targetDateStr}"]`);
+    const iso = normalizeISO(targetDateStr);
+    const cell = viewport.querySelector(`[data-date="${iso}"]`);
     if (cell) {
       const cellLeft = cell.offsetLeft;
       const cellWidth = cell.offsetWidth;
@@ -4560,15 +4612,27 @@ class SupabaseService {
     this._createClientFn = null;
   }
 
-  getHeaders(extra = {}) {
+    async getHeaders(extra = {}) {
     const headers = {
       'apikey': this.anonKey,
       'Content-Type': 'application/json',
       ...extra
     };
-    if (this.anonKey && this.anonKey.split('.').length === 3) {
-      headers['Authorization'] = `Bearer ${this.anonKey}`;
+
+    // Adjuntar el JWT de la sesión real del usuario (Supabase Auth) si existe,
+    // para que las políticas RLS "to authenticated" puedan validar auth.uid().
+    let accessToken = null;
+    try {
+      const client = await this.initClient();
+      if (client) {
+        const { data } = await client.auth.getSession();
+        accessToken = data?.session?.access_token || null;
+      }
+    } catch (e) {
+      console.warn('No se pudo obtener el access_token de la sesión:', e);
     }
+
+    headers['Authorization'] = `Bearer ${accessToken || this.anonKey}`;
     return headers;
   }
 
@@ -4688,11 +4752,11 @@ class SupabaseService {
   async fetchAllData(initialSeed = null) {
     try {
       const [projRes, stgRes, mlsRes, mbrRes, orgRes] = await Promise.all([
-        fetch(`${this.baseUrl}/projects?select=*&order=created_at.asc`, { headers: this.getHeaders() }),
-        fetch(`${this.baseUrl}/stages?select=*&order=created_at.asc`, { headers: this.getHeaders() }),
-        fetch(`${this.baseUrl}/milestones?select=*&order=date.asc`, { headers: this.getHeaders() }),
-        fetch(`${this.baseUrl}/team_members?select=*&order=created_at.asc`, { headers: this.getHeaders() }),
-        fetch(`${this.baseUrl}/organizations?select=*&limit=1`, { headers: this.getHeaders() })
+        fetch(`${this.baseUrl}/projects?select=*&order=created_at.asc`, { headers: await this.getHeaders() }),
+        fetch(`${this.baseUrl}/stages?select=*&order=created_at.asc`, { headers: await this.getHeaders() }),
+        fetch(`${this.baseUrl}/milestones?select=*&order=date.asc`, { headers: await this.getHeaders() }),
+        fetch(`${this.baseUrl}/team_members?select=*&order=created_at.asc`, { headers: await this.getHeaders() }),
+        fetch(`${this.baseUrl}/organizations?select=*&limit=1`, { headers: await this.getHeaders() })
       ]);
 
       if (!projRes.ok) throw new Error(`HTTP Error ${projRes.status} al consultar proyectos`);
@@ -4755,7 +4819,7 @@ class SupabaseService {
     try {
       const res = await fetch(`${this.baseUrl}/milestones`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(row)
       });
       if (!res.ok) {
@@ -4773,7 +4837,7 @@ class SupabaseService {
     try {
       await fetch(`${this.baseUrl}/milestones?id=eq.${id}`, {
         method: 'DELETE',
-        headers: this.getHeaders()
+        headers: await this.getHeaders()
       });
     } catch (e) {}
   }
@@ -4800,7 +4864,7 @@ class SupabaseService {
     try {
       const res = await fetch(`${this.baseUrl}/projects`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(row)
       });
       if (!res.ok) {
@@ -4818,7 +4882,7 @@ class SupabaseService {
     try {
       await fetch(`${this.baseUrl}/projects?id=eq.${id}`, {
         method: 'DELETE',
-        headers: this.getHeaders()
+        headers: await this.getHeaders()
       });
     } catch (e) {}
   }
@@ -4837,7 +4901,7 @@ class SupabaseService {
     try {
       const res = await fetch(`${this.baseUrl}/stages`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(row)
       });
       if (!res.ok) {
@@ -4855,7 +4919,7 @@ class SupabaseService {
     try {
       await fetch(`${this.baseUrl}/stages?id=eq.${id}`, {
         method: 'DELETE',
-        headers: this.getHeaders()
+        headers: await this.getHeaders()
       });
     } catch (e) {}
   }
@@ -4876,7 +4940,7 @@ class SupabaseService {
     try {
       const res = await fetch(`${this.baseUrl}/team_members`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(row)
       });
       if (!res.ok) {
@@ -4894,7 +4958,7 @@ class SupabaseService {
     try {
       await fetch(`${this.baseUrl}/team_members?id=eq.${id}`, {
         method: 'DELETE',
-        headers: this.getHeaders()
+        headers: await this.getHeaders()
       });
     } catch (e) {}
   }
@@ -4911,7 +4975,7 @@ class SupabaseService {
     try {
       const res = await fetch(`${this.baseUrl}/organizations`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(row)
       });
       if (!res.ok) {
@@ -4933,7 +4997,7 @@ class SupabaseService {
       };
       await fetch(`${this.baseUrl}/organizations`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify([orgRow])
       });
 
@@ -4950,7 +5014,7 @@ class SupabaseService {
       }));
       await fetch(`${this.baseUrl}/team_members`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(memberRows)
       });
 
@@ -4973,7 +5037,7 @@ class SupabaseService {
       }));
       await fetch(`${this.baseUrl}/projects`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(projectRows)
       });
 
@@ -4988,7 +5052,7 @@ class SupabaseService {
       }));
       await fetch(`${this.baseUrl}/stages`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(stageRows)
       });
 
@@ -5009,7 +5073,7 @@ class SupabaseService {
       }));
       await fetch(`${this.baseUrl}/milestones`, {
         method: 'POST',
-        headers: this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(milestoneRows)
       });
 
@@ -5022,6 +5086,33 @@ class SupabaseService {
   }
 
   // --- SUSCRIPCIÓN REALTIME MEDIANTE SUPABASE JS CLIENT ---
+    // --- SUPABASE AUTH (login/logout/sesión reales) ---
+  async signInWithPassword(email, password) {
+    const client = await this.initClient();
+    if (!client) return { data: null, error: { message: 'No se pudo inicializar el cliente Supabase' } };
+    return await client.auth.signInWithPassword({ email, password });
+  }
+
+  async signUp(email, password, metadata = {}) {
+    const client = await this.initClient();
+    if (!client) return { data: null, error: { message: 'No se pudo inicializar el cliente Supabase' } };
+    return await client.auth.signUp({ email, password, options: { data: metadata } });
+  }
+
+  async signOut() {
+    const client = await this.initClient();
+    if (!client) return { error: null };
+    return await client.auth.signOut();
+  }
+
+  async getSession() {
+    const client = await this.initClient();
+    if (!client) return null;
+    const { data, error } = await client.auth.getSession();
+    if (error) return null;
+    return data?.session || null;
+  }
+
   async subscribeToRealtime(onChangeCallback) {
     const client = await this.initClient();
     if (!client) return;
@@ -5721,10 +5812,10 @@ class TimelineApp {
   }
 
   panTimeline(daysOffset) {
-    const newDate = new Date(this.state.currentStartDate);
-    newDate.setDate(newDate.getDate() + daysOffset);
-    this.state.currentStartDate = newDate;
-    this.timelineRenderer.setDateRange(this.state.currentStartDate, this.state.timescaleDays);
+    const vp = document.getElementById('timelineViewport');
+    if (vp) {
+      vp.scrollBy({ left: daysOffset * 120, behavior: 'smooth' });
+    }
   }
 
   applyFilters() {
@@ -6249,7 +6340,7 @@ class TimelineApp {
         </div>
         <div class="inspector-row">
           <span class="inspector-label">⏰ Horario:</span>
-          <span class="inspector-val"><strong>${escapeHtml(m.date)}</strong> ${m.timeStart ? `(${m.timeStart} a ${m.timeEnd || '?'})` : '• Todo el día'}</span>
+          <span class="inspector-val"><strong>${formatDateDDMMYYYY(m.date)}</strong> ${m.timeStart ? `(${m.timeStart} a ${m.timeEnd || '?'})` : '• Todo el día'}</span>
         </div>
         ${stage ? `
         <div class="inspector-row">
@@ -6516,7 +6607,7 @@ class TimelineApp {
             </div>
             <div class="hero-meta-item">
               <span class="meta-label">Vigencia Contractual:</span>
-              <span class="meta-val">📅 ${project.startDate} al ${project.endDate}</span>
+              <span class="meta-val">📅 ${formatDateDDMMYYYY(project.startDate)} al ${formatDateDDMMYYYY(project.endDate)}</span>
             </div>
           </div>
 
@@ -6549,7 +6640,7 @@ class TimelineApp {
                     <h4 class="stage-title">${escapeHtml(stage.name)}</h4>
                   </div>
                   <div class="stage-dates">
-                    <span>📅 ${escapeHtml(stage.startDate)} al ${escapeHtml(stage.endDate)}</span>
+                    <span>📅 ${formatDateDDMMYYYY(stage.startDate)} al ${formatDateDDMMYYYY(stage.endDate)}</span>
                   </div>
                   <div>
                     <span class="stage-duration-pill">⏱️ ${Math.max(1, Math.ceil((new Date(stage.endDate + 'T00:00:00') - new Date(stage.startDate + 'T00:00:00')) / (1000*60*60*24)) + 1)} días de duración</span>
@@ -6601,7 +6692,7 @@ class TimelineApp {
                     <tr class="${hasConflict ? 'tr-conflict' : ''}">
                       <td><span class="type-badge-sm">${typeDef.symbol} ${typeDef.label}</span></td>
                       <td><strong>${escapeHtml(m.name)}</strong> ${hasConflict ? '<span class="warn-pill">⚠ Conflicto</span>' : ''}</td>
-                      <td>${m.date}</td>
+                      <td>${formatDateDDMMYYYY(m.date)}</td>
                       <td>${m.timeStart || 'Todo el día'}</td>
                       <td>${resp ? resp.name : '<span style="color:#F59E0B;">Sin asignar</span>'}</td>
                       <td><span class="m-status-pill">${m.status || 'programado'}</span></td>
@@ -6900,7 +6991,7 @@ class TimelineApp {
                     return `
                       <div class="assigned-mini-item" onclick="window.timelineApp.openMilestoneDetails('${m.id}')">
                         <span class="dot" style="background:${prj.color};"></span>
-                        <span class="m-date-mini">${m.date.substring(5)}</span>
+                        <span class="m-date-mini">${formatDateDDMMYYYY(m.date)}</span>
                         <span class="m-name-mini">${m.name}</span>
                       </div>
                     `;
@@ -6988,7 +7079,7 @@ class TimelineApp {
                   <div class="c-title">${escapeHtml(c.title)}</div>
                   <div class="c-desc">${escapeHtml(c.description)}</div>
                   <div class="c-meta">
-                    <span>📅 Fecha: ${c.date}</span>
+                    <span>📅 Fecha: ${formatDateDDMMYYYY(c.date)}</span>
                     ${c.responsibleName ? `<span>👤 Responsable: ${c.responsibleName}</span>` : ''}
                   </div>
                 </div>
@@ -7015,7 +7106,7 @@ class TimelineApp {
                 <div class="critical-item-card" onclick="window.timelineApp.openMilestoneDetails('${m.id}')">
                   <div class="c-item-top">
                     <span class="c-prj-name" style="color: ${prj.color};">${prj.name}</span>
-                    <span class="c-date">${m.date}</span>
+                    <span class="c-date">${formatDateDDMMYYYY(m.date)}</span>
                   </div>
                   <div class="c-item-name">${m.name}</div>
                   <div class="c-item-resp">👤 ${resp ? resp.name : 'Sin asignar'}</div>
@@ -7033,7 +7124,7 @@ class TimelineApp {
                 const prj = this.state.projects.find(p => p.id === m.projectId) || {};
                 return `
                   <div class="unassigned-row">
-                    <span>📁 ${prj.name}: <strong>${m.name}</strong> (${m.date})</span>
+                    <span>📁 ${prj.name}: <strong>${m.name}</strong> (${formatDateDDMMYYYY(m.date)})</span>
                     <button class="btn-assign" onclick="window.timelineApp.openEditMilestoneModal('${m.id}')">Asignar Responsable</button>
                   </div>
                 `;
@@ -7413,23 +7504,17 @@ class TimelineApp {
 
 // --- GESTIÓN DE USUARIOS Y PERMISOS (RBAC) ---
   openCreateUserModal() {
-    if (!this.isAdmin()) {
-      alert('Solo el Administrador puede agregar nuevos usuarios.');
-      return;
-    }
-
     const modal = document.getElementById('userModal');
     if (!modal) return;
 
-    document.getElementById('userModalTitle').textContent = 'NUEVO USUARIO';
+    document.getElementById('userModalTitle').textContent = 'NUEVO PROFESIONAL / EQUIPO';
     document.getElementById('editUserId').value = '';
     document.getElementById('uName').value = '';
-    document.getElementById('uUsername').value = '';
+    if (document.getElementById('uUsername')) document.getElementById('uUsername').value = '';
     document.getElementById('uEmail').value = '';
-    document.getElementById('uRole').value = 'consultor';
+    document.getElementById('uRole').value = 'Arquitecto';
     document.getElementById('uBaseLocation').value = 'Quillota';
     document.getElementById('uColor').value = '#2563EB';
-    document.getElementById('uPassword').value = 'consultor2026';
 
     modal.classList.add('is-open');
     setTimeout(() => document.getElementById('uName').focus(), 80);
@@ -7466,19 +7551,17 @@ class TimelineApp {
   }
 
   async saveUserModal() {
-    if (!this.isAdmin()) return;
-
     const id = document.getElementById('editUserId').value;
     const name = document.getElementById('uName').value.trim();
-    const username = document.getElementById('uUsername').value.trim();
-    const email = document.getElementById('uEmail').value.trim();
     const role = document.getElementById('uRole').value;
-    const baseLocation = document.getElementById('uBaseLocation').value.trim();
-    const color = document.getElementById('uColor').value;
-    const password = document.getElementById('uPassword').value.trim();
+    const username = document.getElementById('uUsername') ? document.getElementById('uUsername').value.trim() : name.toLowerCase().replace(/\s+/g, '.');
+    const email = document.getElementById('uEmail').value.trim() || `${name.toLowerCase().replace(/\s+/g, '.')}@consultora.cl`;
+    const baseLocation = document.getElementById('uBaseLocation').value.trim() || 'Quillota';
+    const color = document.getElementById('uColor').value || '#2563EB';
 
-    if (!name || !username || !email || !password) {
-      alert('Por favor completa todos los campos obligatorios.');
+    if (!name) {
+      alert('Por favor ingresa el nombre del profesional.');
+      document.getElementById('uName').focus();
       return;
     }
 
@@ -7665,6 +7748,38 @@ class TimelineApp {
     if (backdrop) backdrop.classList.remove('is-mobile-open');
   }
 
+
+    // --- CONEXIÓN INICIAL A SUPABASE (carga + marca de estado conectado) ---
+  async connectSupabase(showToast = true) {
+    const data = await this.supabaseService.fetchAllData({
+      projects: this.state.projects,
+      stages: this.state.stages,
+      milestones: this.state.milestones,
+      members: this.state.members,
+      company: this.state.company
+    });
+
+    if (!data) {
+      this.state.supabase.isConnected = false;
+      throw new Error('No se pudo conectar a Supabase (fetchAllData devolvió null)');
+    }
+
+    this.state.projects = data.projects;
+    this.state.stages = data.stages;
+    this.state.milestones = data.milestones;
+    this.state.members = data.members;
+    this.state.company = data.company;
+    this.state.supabase.isConnected = true;
+
+    this.saveState();
+    this.runConflictAnalysis?.();
+    this.populateFilterDropdowns?.();
+    this.timelineRenderer?.setData(this.getRendererData());
+    this.updateAlertBadges?.();
+    this.renderCurrentView?.();
+
+    if (showToast) this.showToast('✓ Conectado a Supabase Cloud');
+  }
 
   async saveCompanySettings() {
     if (!this.isAdmin()) {
@@ -7866,80 +7981,42 @@ TimelineApp.prototype.loginWithGoogle = function() {
 };
 
 TimelineApp.prototype.loginWithEmail = async function() {
-  const emailOrUser = (document.getElementById('authEmail').value || '').trim().toLowerCase();
+  const email = (document.getElementById('authEmail').value || '').trim().toLowerCase();
   const pass = (document.getElementById('authPass').value || '').trim();
-  if (!emailOrUser || !pass) {
-    alert('Por favor ingresa usuario/correo y contraseña.');
+  if (!email || !pass) {
+    alert('Por favor ingresa tu correo y contraseña.');
     return;
   }
 
-  // 1. REGLA MAESTRA: Acceso inmediato para admin/admin (sin importar mayúsculas o si lleva @)
-  if ((emailOrUser === 'admin' || emailOrUser.startsWith('admin@')) && pass === 'admin') {
-    let adminUser = this.state.members.find(m => m.username === 'admin' || m.role === 'admin');
-    if (!adminUser) {
-      adminUser = {
-        id: 'a0000000-0000-4000-8000-000000000001',
-        name: 'Administrador General',
-        username: 'admin',
-        password: 'admin',
-        email: 'admin@consultora.cl',
-        role: 'admin',
-        canManageUsers: true,
-        canManageCompany: true
-      };
-      this.state.members.unshift(adminUser);
+  if (!this.state.supabase.isConnected) {
+    alert('No hay conexión con Supabase todavía. Espera un momento e intenta de nuevo.');
+    return;
+  }
+
+  try {
+    const { data, error } = await this.supabaseService.signInWithPassword(email, pass);
+    if (error || !data?.user) {
+      alert('Credenciales incorrectas.');
+      return;
     }
-    this.state.currentUser = adminUser;
-    localStorage.setItem('TIMELINE_OS_LOCAL_AUTH', JSON.stringify(adminUser));
+
+    const user = {
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.user_metadata?.name || data.user.email.split('@')[0],
+      role: data.user.user_metadata?.role || 'admin',
+      username: email.split('@')[0]
+    };
+    this.state.currentUser = user;
+    localStorage.setItem('TIMELINE_OS_LOCAL_AUTH', JSON.stringify(user));
     this.hideAuthOverlay();
     this.updateUserSidebar();
     this.updateGcalHeaderButton();
-    this.showToast('✓ Bienvenido, Administrador General');
-    return;
+    this.showToast(`✓ Sesión iniciada: ${escapeHtml(user.name)}`);
+  } catch (e) {
+    console.warn('Error de autenticación con Supabase:', e);
+    alert('Ocurrió un error al iniciar sesión. Intenta de nuevo.');
   }
-
-  // 2. Intentar autenticación real con Supabase Auth si es correo
-  if (emailOrUser.includes('@') && this.state.supabase.isConnected) {
-    try {
-      const { data, error } = await this.supabaseService.signInWithPassword(emailOrUser, pass);
-      if (!error && data?.user) {
-        const user = {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.user_metadata?.name || data.user.email.split('@')[0],
-          role: data.user.user_metadata?.role || (emailOrUser.includes('admin') ? 'admin' : 'consultor'),
-          username: emailOrUser.split('@')[0]
-        };
-        this.state.currentUser = user;
-        localStorage.setItem('TIMELINE_OS_LOCAL_AUTH', JSON.stringify(user));
-        this.hideAuthOverlay();
-        this.updateUserSidebar();
-        this.updateGcalHeaderButton();
-        this.showToast(`✓ Sesión iniciada: ${escapeHtml(user.name)}`);
-        return;
-      }
-    } catch (e) {}
-  }
-
-  // 3. Fallback para miembros locales del equipo
-  const localUser = this.state.members.find(m => {
-    const uName = (m.username || '').toLowerCase();
-    const uEmail = (m.email || '').toLowerCase();
-    const uPass = m.password || (m.role === 'admin' ? 'admin' : 'consultor2026');
-    return (uName === emailOrUser || uEmail === emailOrUser) && uPass === pass;
-  });
-
-  if (localUser) {
-    this.state.currentUser = localUser;
-    localStorage.setItem('TIMELINE_OS_LOCAL_AUTH', JSON.stringify(localUser));
-    this.hideAuthOverlay();
-    this.updateUserSidebar();
-    this.updateGcalHeaderButton();
-    this.showToast(`✓ Bienvenido, ${escapeHtml(localUser.name)} (${localUser.role})`);
-    return;
-  }
-
-  alert('Credenciales no reconocidas. Usa usuario: admin y clave: admin');
 };
 
 TimelineApp.prototype.logout = async function() {
