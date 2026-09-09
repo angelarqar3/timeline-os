@@ -4261,9 +4261,8 @@ class TimelineRenderer {
   setScaleMode(mode) {
     if (['dias', 'semanas', 'meses'].includes(mode)) {
       this.options.scaleMode = mode;
-      this.hasScrolledInitial = false;
       this.render();
-      setTimeout(() => this.scrollToDate(this.options.todayDateStr), 80);
+      this.scrollToDate(this.options.todayDateStr, false);
     }
   }
 
@@ -4447,15 +4446,28 @@ class TimelineRenderer {
       </div>
     `;
 
-    this.setupInteractivity(units, colWidth);
+    // Sincronización inmediata de scrollLeft antes de pintar:
+    // Garantiza que Hoy quede siempre al lado izquierdo como primer día/semana/mes visible
+    // Cero parpadeos, cero visualización de fechas pasadas, cero retrasos
+    const viewport = document.getElementById('timelineViewport');
+    if (viewport) {
+      const todayIso = normalizeISO(this.options.todayDateStr);
+      const mode = this.options.scaleMode || 'dias';
+      let targetIdx = -1;
+      if (mode === 'dias') {
+        targetIdx = units.findIndex(u => u.dateStr === todayIso);
+      } else if (mode === 'semanas') {
+        targetIdx = units.findIndex(u => todayIso >= u.startDateStr && todayIso <= u.endDateStr);
+      } else if (mode === 'meses') {
+        targetIdx = units.findIndex(u => todayIso >= u.startDateStr && todayIso <= u.endDateStr);
+      }
 
-    // Posicionar automáticamente en Hoy AL LADO IZQUIERDO como primer día visible
-    if (!this.hasScrolledInitial) {
-      setTimeout(() => {
-        this.scrollToDate(this.options.todayDateStr);
-        this.hasScrolledInitial = true;
-      }, 80);
+      if (targetIdx >= 0) {
+        viewport.scrollLeft = targetIdx * colWidth;
+      }
     }
+
+    this.setupInteractivity(units, colWidth);
   }
 
   renderDateHeaderCell(unit, width, index) {
@@ -4954,7 +4966,7 @@ class TimelineRenderer {
     });
   }
 
-  scrollToDate(targetDateStr) {
+  scrollToDate(targetDateStr, smooth = false) {
     const viewport = document.getElementById('timelineViewport');
     if (!viewport) return;
 
@@ -4973,21 +4985,22 @@ class TimelineRenderer {
     }
 
     if (targetIdx >= 0) {
-      // Posicionar exactamente al lado izquierdo como primer día/semana visible
       const targetLeft = targetIdx * colWidth;
-      viewport.scrollTo({
-        left: targetLeft,
-        behavior: 'smooth'
-      });
+      if (smooth) {
+        viewport.scrollTo({
+          left: targetLeft,
+          behavior: 'smooth'
+        });
+      } else {
+        viewport.scrollLeft = targetLeft;
+      }
 
-      // Destacar brevemente la columna alineada
-      setTimeout(() => {
-        const cell = viewport.querySelector(`.timeline-date-cell[data-index="${targetIdx}"]`);
-        if (cell) {
-          cell.classList.add('flash-highlight');
-          setTimeout(() => cell.classList.remove('flash-highlight'), 1800);
-        }
-      }, 80);
+      // Destacar brevemente la columna
+      const cell = viewport.querySelector(`.timeline-date-cell[data-index="${targetIdx}"]`);
+      if (cell) {
+        cell.classList.add('flash-highlight');
+        setTimeout(() => cell.classList.remove('flash-highlight'), 1600);
+      }
     }
   }
 }
@@ -6141,6 +6154,7 @@ class TimelineApp {
       if (timelineContainer) timelineContainer.style.display = 'block';
       this.timelineRenderer.setViewMode('empresa');
       this.timelineRenderer.setData(this.getRendererData());
+      this.timelineRenderer.scrollToDate(this.todayStr, false);
     } else if (this.state.currentView === 'projects') {
       if (projectsContainer) {
         projectsContainer.style.display = 'block';
@@ -6296,9 +6310,11 @@ class TimelineApp {
 
     this.applyFilters();
 
-    // Posicionar inmediatamente en el día de hoy (alineado a la izquierda)
-    this.goToToday();
-    this.showToast('✓ Filtros limpiados y vista alineada en HOY');
+    // Alinear inmediatamente a Hoy a la izquierda de forma instantánea
+    if (this.timelineRenderer) {
+      this.timelineRenderer.scrollToDate(this.todayStr, false);
+    }
+    this.showToast('✓ Filtros limpiados y vista ajustada en HOY');
   }
 
   populateFilterDropdowns() {
@@ -7514,9 +7530,7 @@ class TimelineApp {
     this.setView('timeline');
     if (this.timelineRenderer) {
       this.timelineRenderer.setViewMode('persona', memberId);
-      setTimeout(() => {
-        this.goToToday();
-      }, 70);
+      this.timelineRenderer.scrollToDate(this.todayStr, false);
     }
   }
 
@@ -7939,7 +7953,6 @@ class TimelineApp {
       this.setView('project-detail', id);
     } else if (type === 'member') {
       this.filterByMember(id);
-      this.goToToday();
     }
   }
 
