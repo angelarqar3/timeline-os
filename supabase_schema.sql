@@ -86,6 +86,7 @@ CREATE TABLE projects (
     responsible_id UUID REFERENCES team_members(id) ON DELETE SET NULL,
     status project_status DEFAULT 'en_desarrollo' NOT NULL,
     start_date DATE NOT NULL,
+    end_date DATE,
     end_date DATE NOT NULL,
     color TEXT NOT NULL DEFAULT '#2563EB',
     progress INT DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),

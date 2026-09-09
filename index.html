@@ -2503,6 +2503,82 @@ body {
   color: var(--text-muted);
 }
 
+
+/* ==========================================================================
+   TAREAS CONTINUAS CON DURACIÓN MULTIDÍA (v6.5)
+   ========================================================================== */
+
+.track-tasks-layer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 14;
+}
+
+.timeline-task-bar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 28px;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.15s ease;
+  overflow: hidden;
+}
+
+.timeline-task-bar:hover {
+  background: #1E293B;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--accent-blue);
+  transform: translateY(-50%) scaleY(1.08);
+  z-index: 25 !important;
+}
+
+.task-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.task-bar-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.task-bar-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #F8FAFC;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.task-bar-duration-badge {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #93C5FD;
+  background: rgba(59, 130, 246, 0.2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
 </style>
 </head>
 <body>
@@ -2815,11 +2891,22 @@ body {
 
           <div class="form-row-2">
             <div class="form-group">
-              <label for="mDate">Fecha <span style="color:var(--accent-rose);">*</span></label>
-              <input type="date" id="mDate" class="input-field" required>
+              <label for="mDate">Fecha Inicio <span style="color:var(--accent-rose);">*</span></label>
+              <input type="date" id="mDate" class="input-field" onchange="window.timelineApp.handleQuickTaskDateChange()" required>
             </div>
             <div class="form-group">
-              <label for="mType">Tipo de Hito</label>
+              <label for="mDuration">Duración (Días corridos)</label>
+              <input type="number" id="mDuration" class="input-field" min="1" max="1000" placeholder="1 día (Hito puntual)" oninput="window.timelineApp.handleQuickTaskDurationChange()">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="mEndDate">Fecha Término (Para Tareas)</label>
+              <input type="date" id="mEndDate" class="input-field" onchange="window.timelineApp.handleQuickTaskEndDateChange()">
+            </div>
+            <div class="form-group">
+              <label for="mType">Tipo de Elemento</label>
               <select id="mType" class="input-field">
                 <option value="reunion">● Reunión</option>
                 <option value="entrega">◆ Entrega</option>
@@ -2904,11 +2991,22 @@ body {
 
           <div class="form-row-2">
             <div class="form-group">
-              <label for="editMDate">Fecha <span style="color:var(--accent-rose);">*</span></label>
-              <input type="date" id="editMDate" class="input-field" required>
+              <label for="editMDate">Fecha Inicio <span style="color:var(--accent-rose);">*</span></label>
+              <input type="date" id="editMDate" class="input-field" onchange="window.timelineApp.handleEditTaskDateChange()" required>
             </div>
             <div class="form-group">
-              <label for="editMType">Tipo de Hito</label>
+              <label for="editMDuration">Duración (Días corridos)</label>
+              <input type="number" id="editMDuration" class="input-field" min="1" max="1000" placeholder="1 día" oninput="window.timelineApp.handleEditTaskDurationChange()">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="editMEndDate">Fecha Término</label>
+              <input type="date" id="editMEndDate" class="input-field" onchange="window.timelineApp.handleEditTaskEndDateChange()">
+            </div>
+            <div class="form-group">
+              <label for="editMType">Tipo de Elemento</label>
               <select id="editMType" class="input-field">
                 <option value="reunion">● Reunión</option>
                 <option value="entrega">◆ Entrega</option>
@@ -4465,8 +4563,14 @@ class TimelineRenderer {
           ${todayLineHtml}
           ${connectingLineHtml}
 
+          <!-- Capa de Tareas Continuas con Duración (Líneas horizontales) -->
+          <div class="track-tasks-layer">
+            ${trackMilestones.filter(m => m.endDate && normalizeISO(m.endDate) > normalizeISO(m.date)).map(m => this.renderTaskBar(m, units, colWidth, track.color, trackIndex)).join('')}
+          </div>
+
+          <!-- Capa de Hitos Puntuales (Símbolos geométricos) -->
           <div class="track-milestones-layer">
-            ${trackMilestones.map(m => this.renderMilestoneNode(m, units, colWidth, track.color, trackIndex)).join('')}
+            ${trackMilestones.filter(m => !m.endDate || normalizeISO(m.endDate) <= normalizeISO(m.date)).map(m => this.renderMilestoneNode(m, units, colWidth, track.color, trackIndex)).join('')}
           </div>
         </div>
 
@@ -4518,6 +4622,41 @@ class TimelineRenderer {
     }
 
     return -1;
+  }
+
+  renderTaskBar(m, units, colWidth, projectColor, trackIndex = 0) {
+    const startIso = normalizeISO(m.date);
+    const endIso = normalizeISO(m.endDate);
+    const x1 = this.calculateDateXPosition(startIso, units, colWidth);
+    const x2 = this.calculateDateXPosition(endIso, units, colWidth);
+
+    if (x1 < 0 && x2 < 0) return '';
+    const left = Math.max(0, x1);
+    const right = x2 > 0 ? x2 : (units.length * colWidth);
+    const width = Math.max(34, right - left);
+
+    const dStart = new Date(startIso + 'T00:00:00');
+    const dEnd = new Date(endIso + 'T00:00:00');
+    const diffDays = Math.max(1, Math.ceil((dEnd - dStart) / (1000 * 60 * 60 * 24)) + 1);
+
+    const conflicts = (this.data.milestoneConflictMap.get(m.id) || []);
+    const hasConflict = conflicts.length > 0;
+    const barBorderColor = hasConflict ? '#EF4444' : projectColor;
+
+    return `
+      <div class="timeline-task-bar is-draggable ${hasConflict ? 'has-conflict-pulse' : ''}" 
+           style="left: ${left}px; width: ${width}px; border-left: 5px solid ${barBorderColor};"
+           data-milestone-id="${m.id}"
+           draggable="true"
+           onclick="event.stopPropagation(); window.timelineApp.openMilestoneInspector('${m.id}')"
+           title="Tarea continua: ${escapeHtml(m.name)} (${formatDateDDMMYYYY(startIso)} al ${formatDateDDMMYYYY(endIso)} - ${diffDays} días)">
+        <div class="task-bar-content">
+          <span class="task-bar-color-dot" style="background:${barBorderColor};"></span>
+          <span class="task-bar-name">${escapeHtml(m.name)}</span>
+          <span class="task-bar-duration-badge">⏱️ ${diffDays}d</span>
+        </div>
+      </div>
+    `;
   }
 
   renderMilestoneNode(milestone, units, colWidth, projectColor, trackIndex = 0) {
@@ -4966,6 +5105,7 @@ class SupabaseService {
           priority: row.priority,
           locationOverride: row.location_override,
           observations: row.observations,
+          endDate: row.end_date || null,
           gcalEventId: row.gcal_event_id,
           updatedAt: row.updated_at
         };
@@ -5060,6 +5200,7 @@ class SupabaseService {
       status: m.status || 'programado',
       priority: m.priority || 'media',
       location_override: m.locationOverride || null,
+      end_date: m.endDate || null,
       observations: m.observations || null,
       gcal_event_id: m.gcalEventId || null
     };
@@ -6210,6 +6351,8 @@ class TimelineApp {
 
     document.getElementById('mName').value = '';
     document.getElementById('mDate').value = presetDate || this.todayStr;
+    document.getElementById('mEndDate').value = '';
+    document.getElementById('mDuration').value = '';
     document.getElementById('mTimeStart').value = '';
     document.getElementById('mTimeEnd').value = '';
     document.getElementById('mType').value = 'reunion';
@@ -6235,6 +6378,8 @@ class TimelineApp {
     const responsibleId = document.getElementById('mResponsible').value || null;
     const priority = document.getElementById('mPriority').value;
     const observations = document.getElementById('mObservations').value.trim();
+    const endInputVal = document.getElementById('mEndDate').value;
+    const endDate = (endInputVal && endInputVal > date) ? endInputVal : null;
 
     if (!name) {
       alert('Por favor ingresa el nombre del hito (¿Qué?).');
@@ -6263,7 +6408,8 @@ class TimelineApp {
       status: 'programado',
       priority,
       locationOverride: null,
-      observations
+      observations,
+      endDate
     };
 
     this.state.milestones.push(newMilestone);
@@ -6297,6 +6443,16 @@ class TimelineApp {
     document.getElementById('editMId').value = m.id;
     document.getElementById('editMName').value = m.name;
     document.getElementById('editMDate').value = m.date;
+    const editEndInput = document.getElementById('editMEndDate');
+    const editDurInput = document.getElementById('editMDuration');
+    editEndInput.value = m.endDate || '';
+    if (m.endDate && m.endDate > m.date) {
+      const dStart = new Date(m.date + 'T00:00:00');
+      const dEnd = new Date(m.endDate + 'T00:00:00');
+      editDurInput.value = Math.max(1, Math.ceil((dEnd - dStart) / (1000 * 60 * 60 * 24)) + 1);
+    } else {
+      editDurInput.value = 1;
+    }
     document.getElementById('editMTimeStart').value = m.timeStart || '';
     document.getElementById('editMTimeEnd').value = m.timeEnd || '';
     document.getElementById('editMType').value = m.milestoneType || 'reunion';
@@ -6344,6 +6500,8 @@ class TimelineApp {
     m.projectId = document.getElementById('editMProject').value;
     m.stageId = document.getElementById('editMStage').value || null;
     m.date = document.getElementById('editMDate').value;
+    const editEndVal = document.getElementById('editMEndDate').value;
+    m.endDate = (editEndVal && editEndVal > m.date) ? editEndVal : null;
     m.timeStart = document.getElementById('editMTimeStart').value || null;
     m.timeEnd = document.getElementById('editMTimeEnd').value || null;
     m.milestoneType = document.getElementById('editMType').value;
@@ -6599,6 +6757,8 @@ class TimelineApp {
     const stage = this.state.stages.find(s => s.id === m.stageId);
     const conflicts = this.state.milestoneConflictMap.get(m.id) || [];
     const typeDef = MILESTONE_TYPES[m.milestoneType] || MILESTONE_TYPES.reunion;
+    const isTask = m.endDate && normalizeISO(m.endDate) > normalizeISO(m.date);
+    const taskDiffDays = isTask ? Math.max(1, Math.ceil((new Date(normalizeISO(m.endDate) + 'T00:00:00') - new Date(normalizeISO(m.date) + 'T00:00:00')) / (1000*60*60*24)) + 1) : 1;
 
     const container = document.getElementById('milestoneInspectorOverlay');
     if (!container) {
@@ -6622,6 +6782,12 @@ class TimelineApp {
       </div>
 
       <div class="inspector-body">
+        ${isTask ? `
+          <div class="inspector-row" style="background:rgba(59,130,246,0.15); padding:6px 10px; border-radius:6px; border:1px solid rgba(59,130,246,0.3);">
+            <span class="inspector-label" style="color:#93C5FD; font-weight:700;">▬ Tarea Continua:</span>
+            <span class="inspector-val" style="color:#BFDBFE; font-weight:700;">⏱️ ${taskDiffDays} días (${formatDateDDMMYYYY(m.date)} al ${formatDateDDMMYYYY(m.endDate)})</span>
+          </div>
+        ` : ''}
         <div class="inspector-row">
           <span class="inspector-label">📅 Fecha:</span>
           <div style="display:flex; gap:4px; align-items:center;">
@@ -6697,6 +6863,8 @@ class TimelineApp {
     const member = this.state.members.find(u => u.id === m.responsibleId);
     const conflicts = this.state.milestoneConflictMap.get(m.id) || [];
     const typeDef = MILESTONE_TYPES[m.milestoneType] || MILESTONE_TYPES.reunion;
+    const isTask = m.endDate && normalizeISO(m.endDate) > normalizeISO(m.date);
+    const taskDiffDays = isTask ? Math.max(1, Math.ceil((new Date(normalizeISO(m.endDate) + 'T00:00:00') - new Date(normalizeISO(m.date) + 'T00:00:00')) / (1000*60*60*24)) + 1) : 1;
 
     const modal = document.getElementById('milestoneDetailModal');
     const content = document.getElementById('milestoneDetailContent');
@@ -6978,6 +7146,8 @@ class TimelineApp {
               <tbody>
                 ${milestones.map(m => {
                   const typeDef = MILESTONE_TYPES[m.milestoneType] || MILESTONE_TYPES.reunion;
+    const isTask = m.endDate && normalizeISO(m.endDate) > normalizeISO(m.date);
+    const taskDiffDays = isTask ? Math.max(1, Math.ceil((new Date(normalizeISO(m.endDate) + 'T00:00:00') - new Date(normalizeISO(m.date) + 'T00:00:00')) / (1000*60*60*24)) + 1) : 1;
                   const resp = this.state.members.find(u => u.id === m.responsibleId);
                   const hasConflict = this.state.milestoneConflictMap.has(m.id);
                   return `
@@ -8468,6 +8638,68 @@ class TimelineApp {
     this.timelineRenderer.scrollToDate(newProject.startDate);
 
     this.showToast(`✓ Proyecto "${newProject.name}" importado exitosamente (${newStages.length} etapas, ${newMilestones.length} hitos)`);
+  }
+
+
+  // --- SINCRONIZACIÓN DE TAREAS CON DURACIÓN ---
+  handleQuickTaskDurationChange() {
+    const startDate = document.getElementById('mDate').value;
+    const durVal = parseInt(document.getElementById('mDuration').value, 10);
+    const endInput = document.getElementById('mEndDate');
+    if (!startDate || isNaN(durVal) || durVal <= 1) {
+      endInput.value = '';
+      return;
+    }
+    const d = new Date(startDate + 'T00:00:00');
+    d.setDate(d.getDate() + durVal - 1);
+    endInput.value = d.toISOString().split('T')[0];
+  }
+
+  handleQuickTaskEndDateChange() {
+    const startDate = document.getElementById('mDate').value;
+    const endDate = document.getElementById('mEndDate').value;
+    const durInput = document.getElementById('mDuration');
+    if (!startDate || !endDate || endDate <= startDate) {
+      durInput.value = 1;
+      return;
+    }
+    const d1 = new Date(startDate + 'T00:00:00');
+    const d2 = new Date(endDate + 'T00:00:00');
+    durInput.value = Math.max(1, Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+  }
+
+  handleQuickTaskDateChange() {
+    this.handleQuickTaskDurationChange();
+  }
+
+  handleEditTaskDurationChange() {
+    const startDate = document.getElementById('editMDate').value;
+    const durVal = parseInt(document.getElementById('editMDuration').value, 10);
+    const endInput = document.getElementById('editMEndDate');
+    if (!startDate || isNaN(durVal) || durVal <= 1) {
+      endInput.value = '';
+      return;
+    }
+    const d = new Date(startDate + 'T00:00:00');
+    d.setDate(d.getDate() + durVal - 1);
+    endInput.value = d.toISOString().split('T')[0];
+  }
+
+  handleEditTaskEndDateChange() {
+    const startDate = document.getElementById('editMDate').value;
+    const endDate = document.getElementById('editMEndDate').value;
+    const durInput = document.getElementById('editMDuration');
+    if (!startDate || !endDate || endDate <= startDate) {
+      durInput.value = 1;
+      return;
+    }
+    const d1 = new Date(startDate + 'T00:00:00');
+    const d2 = new Date(endDate + 'T00:00:00');
+    durInput.value = Math.max(1, Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+  }
+
+  handleEditTaskDateChange() {
+    this.handleEditTaskDurationChange();
   }
 
   showToast(message) {
