@@ -2764,6 +2764,14 @@ body {
             <button class="btn-primary" onclick="window.timelineApp.openCreateTenantModal()" style="font-size:11px; padding:3px 7px; background:#0F766E;" title="Crear nueva empresa con base de datos propia">+ Empresa</button>
           </div>
           <button class="btn-hamburger" onclick="window.timelineApp.toggleMobileSidebar()" aria-label="Abrir menú">☰</button>
+          <!-- Marca e Identidad de la Consultora en la Cabecera -->
+          <div class="header-company-brand" id="headerCompanyBrand" style="display:flex; align-items:center; gap:10px; padding-right:12px; border-right:1px solid rgba(51,65,85,0.5);">
+            <div class="company-header-logo-badge" id="companyHeaderLogo" style="width:32px; height:32px; border-radius:6px; background:#2563EB; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; box-shadow:0 0 10px rgba(0,0,0,0.4);">T</div>
+            <div class="company-header-meta" style="display:flex; flex-direction:column; line-height:1.2;">
+              <span class="company-header-name" id="companyHeaderName" style="font-size:13px; font-weight:700; color:#F8FAFC; white-space:nowrap;">Consultora de Arquitectura y Urbanismo</span>
+              <span class="company-header-city" id="companyHeaderCity" style="font-size:10px; color:#94A3B8;">📍 Quillota / Valparaíso, Chile</span>
+            </div>
+          </div>
           
           <!-- Selector de Escala Estilo MS Project -->
           <div class="timescale-segmented-control">
@@ -5292,7 +5300,9 @@ class SupabaseService {
           name: row.name,
           baseCity: row.base_city,
           rut: row.rut,
-          googleClientId: row.google_client_id
+          googleClientId: row.google_client_id,
+          logoSymbol: row.logo_symbol || null,
+          logoColor: row.logo_color || '#2563EB'
         };
 
       default:
@@ -5300,16 +5310,15 @@ class SupabaseService {
     }
   }
 
-  async fetchAllData(initialSeed = null, orgId = null) {
+  async fetchAllData() {
     try {
-      const orgFilter = orgId ? `&org_id=eq.${orgId}` : '';
-      const orgSingleFilter = orgId ? `&id=eq.${orgId}` : '&limit=1';
+      // Consulta universal limpia compartida por toda la consultora (sin filtros excluyentes de org_id)
       const [projRes, stgRes, mlsRes, mbrRes, orgRes] = await Promise.all([
-        fetch(`${this.baseUrl}/projects?select=*${orgFilter}&order=created_at.asc`, { headers: await this.getHeaders() }),
+        fetch(`${this.baseUrl}/projects?select=*&order=created_at.asc`, { headers: await this.getHeaders() }),
         fetch(`${this.baseUrl}/stages?select=*&order=created_at.asc`, { headers: await this.getHeaders() }),
         fetch(`${this.baseUrl}/milestones?select=*&order=date.asc`, { headers: await this.getHeaders() }),
-        fetch(`${this.baseUrl}/team_members?select=*${orgFilter}&order=created_at.asc`, { headers: await this.getHeaders() }),
-        fetch(`${this.baseUrl}/organizations?select=*${orgSingleFilter}`, { headers: await this.getHeaders() })
+        fetch(`${this.baseUrl}/team_members?select=*&order=created_at.asc`, { headers: await this.getHeaders() }),
+        fetch(`${this.baseUrl}/organizations?select=*&limit=1`, { headers: await this.getHeaders() })
       ]);
 
       if (!projRes.ok) throw new Error(`HTTP Error ${projRes.status} al consultar proyectos`);
@@ -5320,18 +5329,8 @@ class SupabaseService {
       const membersData = mbrRes.ok ? await mbrRes.json() : [];
       const orgData = orgRes.ok ? await orgRes.json() : [];
 
-      if (projectsData.length === 0 && initialSeed) {
-        console.log('Base vacía en la nube. Sembrando datos...');
-        await this.seedInitialData(
-          initialSeed.projects,
-          initialSeed.stages,
-          initialSeed.milestones,
-          initialSeed.members,
-          initialSeed.company
-        );
-        return await this.fetchAllData(null);
-      }
-
+      // NUNCA re-sembrar automáticamente datos de prueba en la nube.
+      // Si la base tiene pocos proyectos o está vacía, se respeta estrictamente lo que hay en Supabase.
       const projects = projectsData.map(p => this.mapRow('projects', p));
       const stages = stagesData.map(s => this.mapRow('stages', s));
       const milestones = milestonesData.map(m => this.mapRow('milestones', m));
@@ -5602,7 +5601,9 @@ class SupabaseService {
       name: org.name,
       rut: org.rut || null,
       base_city: org.baseCity || 'Quillota / Valparaíso, Chile',
-      google_client_id: org.googleClientId || null
+      google_client_id: org.googleClientId || null,
+      logo_symbol: org.logoSymbol || null,
+      logo_color: org.logoColor || '#2563EB'
     };
 
     try {
@@ -6217,6 +6218,7 @@ class TimelineApp {
       this.closeMobileSidebar();
     this.renderCurrentView();
     this.initAuthAndCalendar();
+      this.updateCompanyBrandDisplay();
 
       // Conexión a Supabase y Suscripción Inmediata a Realtime
       if (this.state.supabase.url && this.state.supabase.anonKey) {
@@ -6235,6 +6237,7 @@ class TimelineApp {
       this.closeMobileSidebar();
     this.renderCurrentView();
     this.initAuthAndCalendar();
+      this.updateCompanyBrandDisplay();
     }
   }
 
@@ -6258,8 +6261,13 @@ class TimelineApp {
       }
     }
 
-    if (!loadedSuccessfully || this.state.projects.length === 0) {
-      this.loadInitialData();
+    if (!loadedSuccessfully) {
+      // Dispositivo nuevo (ej. tablet o móvil): empezar con estado limpio y esperar a Supabase Cloud
+      // NUNCA inyectar proyectos de demo que puedan sobreescribir la base de datos
+      this.state.projects = [];
+      this.state.stages = [];
+      this.state.milestones = [];
+      this.state.members = [];
     }
 
     const supaRaw = localStorage.getItem(this.supabaseConfigKey);
@@ -6315,6 +6323,7 @@ class TimelineApp {
       this.closeMobileSidebar();
     this.renderCurrentView();
     this.initAuthAndCalendar();
+      this.updateCompanyBrandDisplay();
       this.showToast('✓ Proyectos e hitos restaurados correctamente.');
     }
   }
@@ -6365,6 +6374,7 @@ class TimelineApp {
     this.closeMobileSidebar();
     this.renderCurrentView();
     this.initAuthAndCalendar();
+      this.updateCompanyBrandDisplay();
   }
 
   renderCurrentView() {
@@ -7955,12 +7965,22 @@ class TimelineApp {
             
             <div class="form-row-2">
               <div class="form-group">
-                <label>Nombre de la Empresa / Estudio</label>
-                <input type="text" id="cfgCompanyName" class="input-field" value="Consultora de Arquitectura y Urbanismo" ${!isAdmin ? 'disabled' : ''}>
+                <label>Nombre de la Empresa / Estudio <span style="color:var(--accent-rose);">*</span></label>
+                <input type="text" id="cfgCompanyName" class="input-field" value="${escapeHtml(this.state.company?.name || 'Consultora de Arquitectura y Urbanismo')}" ${!isAdmin ? 'disabled' : ''} placeholder="Ej. Territorial Arq">
               </div>
               <div class="form-group">
-                <label>Sede Principal</label>
-                <input type="text" id="cfgCompanyBase" class="input-field" value="Quillota / Valparaíso, Chile" ${!isAdmin ? 'disabled' : ''}>
+                <label>Sede Principal / Comuna</label>
+                <input type="text" id="cfgCompanyBase" class="input-field" value="${escapeHtml(this.state.company?.baseCity || 'Quillota / Valparaíso, Chile')}" ${!isAdmin ? 'disabled' : ''} placeholder="Ej. Quillota / Valparaíso, Chile">
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Siglas / Símbolo del Logo</label>
+                <input type="text" id="cfgCompanyLogo" class="input-field" maxlength="4" value="${escapeHtml(this.state.company?.logoSymbol || 'T')}" ${!isAdmin ? 'disabled' : ''} placeholder="Ej. T o TA">
+              </div>
+              <div class="form-group">
+                <label>Color Identificador del Logo</label>
+                <input type="color" id="cfgCompanyColor" class="input-field" value="${this.state.company?.logoColor || '#2563EB'}" style="height:42px; padding:2px 4px; cursor:pointer;" ${!isAdmin ? 'disabled' : ''}>
               </div>
             </div>
             <div class="form-row-2">
@@ -8499,16 +8519,8 @@ class TimelineApp {
 
     // --- CONEXIÓN INICIAL A SUPABASE (carga + marca de estado conectado) ---
   async connectSupabase(showToast = true) {
-    const activeOrgId = this.state.currentOrgId || (this.state.currentUser?.org_id) || 'e0000000-0000-4000-8000-000000000001';
-    const data = await this.supabaseService.fetchAllData({
-      projects: this.state.projects,
-      stages: this.state.stages,
-      milestones: this.state.milestones,
-      members: this.state.members,
-      company: this.state.company
-    }, activeOrgId);
-
-    if (!data) {
+    const data = await this.supabaseService.fetchAllData();
+if (!data) {
       this.state.supabase.isConnected = false;
       throw new Error('No se pudo conectar a Supabase (fetchAllData devolvió null)');
     }
@@ -8520,6 +8532,7 @@ class TimelineApp {
     this.state.members = data.members;
     this.state.company = data.company;
     this.state.supabase.isConnected = true;
+    this.updateCompanyBrandDisplay();
     this.updateAdminOrgSelector();
 
     this.saveState();
@@ -9104,6 +9117,35 @@ class TimelineApp {
       }
     } else {
       alert(`Error al crear empresa: ${res?.error || 'No se pudo completar'}`);
+    }
+  }
+
+
+  updateCompanyBrandDisplay() {
+    const comp = this.state.company || { name: 'Consultora de Arquitectura y Urbanismo', baseCity: 'Quillota / Valparaíso, Chile', logoSymbol: 'T', logoColor: '#2563EB' };
+    const name = comp.name || 'Consultora de Arquitectura y Urbanismo';
+    const city = comp.baseCity || 'Quillota / Valparaíso, Chile';
+    const logo = comp.logoSymbol || name.charAt(0).toUpperCase();
+    const color = comp.logoColor || '#2563EB';
+
+    // Cabecera superior
+    const hName = document.getElementById('companyHeaderName');
+    const hCity = document.getElementById('companyHeaderCity');
+    const hLogo = document.getElementById('companyHeaderLogo');
+    if (hName) hName.textContent = name;
+    if (hCity) hCity.textContent = `📍 ${city}`;
+    if (hLogo) {
+      hLogo.textContent = logo;
+      hLogo.style.backgroundColor = color;
+    }
+
+    // Barra lateral
+    const sName = document.getElementById('companySidebarName');
+    const sLogo = document.getElementById('companySidebarLogoBadge');
+    if (sName) sName.textContent = name;
+    if (sLogo) {
+      sLogo.textContent = logo;
+      sLogo.style.backgroundColor = color;
     }
   }
 
