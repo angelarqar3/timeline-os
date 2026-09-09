@@ -15,6 +15,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   
   <!-- Google Identity Services -->
+    <!-- Supabase Oficial JS SDK v2 vía CDN jsdelivr (Patrón oficial de referencia) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://accounts.google.com/gsi/client" async defer id="gsiScript"></script>
   
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><circle cx='30' cy='50' r='12' fill='white'/><rect x='42' y='46' width='35' height='8' fill='white'/><polygon points='75,36 90,50 75,64 60,50' fill='%2338bdf8'/></svg>">
@@ -5037,7 +5039,7 @@ class SupabaseService {
 
   async initClient() {
     if (this.client) return this.client;
-    const createClient = await this.getCreateClient();
+    const createClient = window.supabase?.createClient || await this.getCreateClient();
     if (!createClient) return null;
 
     try {
@@ -5050,6 +5052,7 @@ class SupabaseService {
       });
       return this.client;
     } catch (e) {
+      console.warn('Error al inicializar cliente Supabase:', e);
       return null;
     }
   }
@@ -5976,14 +5979,12 @@ class TimelineApp {
 
       // Conexión a Supabase y Suscripción Inmediata a Realtime
       if (this.state.supabase.url && this.state.supabase.anonKey) {
-        setTimeout(() => {
-          this.connectSupabase(false).then(() => {
+        this.connectSupabase(false).then(() => {
             console.log('✓ Supabase conectado. Activando suscripción Realtime en vivo...');
             this.supabaseService.subscribeToRealtime((table, payload) => {
               this.handleRealtimeChange(table, payload);
             });
           }).catch(err => console.warn('Supabase silent init:', err));
-        }, 150);
       }
     } catch (err) {
       console.error('Error durante la inicialización:', err);
@@ -6008,6 +6009,7 @@ class TimelineApp {
           this.state.stages = parsed.stages || [];
           this.state.milestones = parsed.milestones || [];
           this.state.members = parsed.members || [];
+          if (parsed.company) this.state.company = parsed.company;
           loadedSuccessfully = true;
         }
       } catch (e) {
@@ -6044,8 +6046,21 @@ class TimelineApp {
   }
 
   saveState() {
-    // 100% Online: No se almacena nada en caché local aislada.
-    // Toda la información reside en la base de datos Supabase compartida.
+    // Estrategia Cache-First sincronizada: Mantiene la memoria local actualizada con la nube
+    // para que al recargar no exista ningún parpadeo de datos desfasados.
+    try {
+      const payload = {
+        projects: this.state.projects,
+        stages: this.state.stages,
+        milestones: this.state.milestones,
+        members: this.state.members,
+        company: this.state.company,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem(this.storageKey, JSON.stringify(payload));
+    } catch (e) {
+      console.warn('Error al actualizar caché local:', e);
+    }
   }
 
   resetToDemoData() {
