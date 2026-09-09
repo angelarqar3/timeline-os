@@ -169,7 +169,7 @@ INSERT INTO organizations (id, name, base_city)
 VALUES ('e0000000-0000-4000-8000-000000000001', 'Consultora de Arquitectura y Urbanismo', 'Quillota / Valparaíso, Chile');
 
 INSERT INTO team_members (id, username, name, email, role, avatar_color, base_location, password) VALUES
-('a0000000-0000-4000-8000-000000000001', 'admin', 'Administrador General', 'admin@consultora.cl', 'admin', '#EF4444', 'Quillota', 'admin'),
+('a0000000-0000-4000-8000-000000000001', 'territorial', 'Administrador General', 'territorial.arq@gmail.com', 'admin', '#EF4444', 'Quillota', 'consultor2026'),
 ('a0000000-0000-4000-8000-000000000002', 'angel', 'Angel Asencio', 'angel.asencio@consultora.cl', 'Director de Proyectos', '#2563EB', 'Quillota', 'consultor2026'),
 ('a0000000-0000-4000-8000-000000000003', 'maria', 'María González', 'mgonzalez@consultora.cl', 'Arquitecta Urbanista', '#EC4899', 'Valparaíso', 'consultor2026'),
 ('a0000000-0000-4000-8000-000000000004', 'carlos', 'Carlos Soto', 'csoto@consultora.cl', 'Ingeniero Civil Estructural', '#10B981', 'Santiago', 'consultor2026'),

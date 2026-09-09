@@ -2690,7 +2690,7 @@ body {
       <form class="auth-form" onsubmit="event.preventDefault(); window.timelineApp.loginWithEmail();">
         <div class="form-group">
           <label for="authEmail">Correo Electrónico</label>
-          <input type="email" id="authEmail" class="input-field" placeholder="tu_correo@ejemplo.com" required autocomplete="email">
+          <input type="email" id="authEmail" class="input-field" placeholder="territorial.arq@gmail.com" value="territorial.arq@gmail.com" required autocomplete="email">
         </div>
         <div class="form-group">
           <label for="authPass">Contraseña</label>
@@ -7977,7 +7977,7 @@ class TimelineApp {
             ${isAdmin ? `
               <button class="btn-primary" onclick="window.timelineApp.saveCompanySettings()">Guardar Cambios de Empresa en Supabase</button>
             ` : `
-              <p style="font-size:11px; color:#F87171; margin-top:8px;">* Para editar los datos de la empresa debes ingresar con la cuenta maestra <strong>admin</strong>.</p>
+              <p style="font-size:11px; color:#F87171; margin-top:8px;">* Para editar los datos de la empresa debes ingresar con la cuenta del Administrador General (<strong>territorial.arq@gmail.com</strong>).</p>
             `}
           </div>
         </div>
@@ -8374,8 +8374,8 @@ class TimelineApp {
     const u = this.state.members.find(x => x.id === userId);
     if (!u) return;
 
-    if (u.username === 'admin') {
-      alert('No es posible eliminar la cuenta maestra de Administrador.');
+    if (u.email === 'territorial.arq@gmail.com' || u.role === 'admin' || u.username === 'territorial') {
+      alert('No es posible eliminar la cuenta del Administrador General (territorial.arq@gmail.com).');
       return;
     }
 
@@ -8463,14 +8463,15 @@ class TimelineApp {
       this.state.currentUser = { 
         id: 'a0000000-0000-4000-8000-000000000001', 
         name: 'Administrador General', 
-        username: 'admin', 
+        username: 'territorial',
+        email: 'territorial.arq@gmail.com',
         role: 'admin', 
         canManageUsers: true, 
         canManageCompany: true 
       };
     } else {
       this.state.currentUser.role = 'admin';
-      this.state.currentUser.username = 'admin';
+      this.state.currentUser.email = 'territorial.arq@gmail.com';
       this.state.currentUser.canManageUsers = true;
       this.state.currentUser.canManageCompany = true;
     }
@@ -9141,7 +9142,7 @@ TimelineApp.prototype.initAuthAndCalendar = async function() {
         id: session.user.id,
         email: session.user.email,
         name: session.user.user_metadata?.name || session.user.email.split('@')[0],
-        role: session.user.user_metadata?.role || (session.user.email.includes('admin') ? 'admin' : 'consultor'),
+        role: session.user.email === 'territorial.arq@gmail.com' ? 'admin' : (session.user.user_metadata?.role || 'consultor'),
         username: session.user.email.split('@')[0]
       };
       this.state.currentUser = u;
