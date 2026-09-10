@@ -2434,14 +2434,21 @@ body {
     padding-right: 6px !important;
   }
 
-  /* Ocultamos la etiqueta "VISTA:" (queda solo el ícono de cada botón) */
+  /* Ocultamos la etiqueta "VISTA:" y el texto de cada botón (queda solo el ícono) */
   .timescale-segmented-control .scale-label {
     display: none !important;
   }
 
+  .scale-btn-text {
+    display: none !important;
+  }
+
+  .btn-timescale-mode {
+    padding: 6px 9px !important;
+  }
+
   .timescale-segmented-control,
-  .nav-temporal-group,
-  .org-selector-bar {
+  .nav-temporal-group {
     flex-shrink: 0 !important;
   }
 
@@ -2671,32 +2678,6 @@ body {
 }
 
 
-/* ==========================================================================
-   MULTI-TENANCY: SELECTOR DE ORGANIZACIÓN / ESPACIO DE TRABAJO (v9.0)
-   ========================================================================== */
-
-.org-selector-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #090D16;
-  border: 1px solid var(--border-color);
-  padding: 4px 10px;
-  border-radius: 8px;
-}
-
-.org-select-dropdown {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: #38BDF8;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 6px;
-  outline: none;
-  cursor: pointer;
-}
-
 </style>
 </head>
 <body>
@@ -2799,12 +2780,6 @@ body {
       <header class="top-header">
         
                 <div class="header-left-tools">
-          <!-- Selector de Espacio de Trabajo / Empresa (Visible para Admin General) -->
-          <div class="org-selector-bar" id="adminOrgSelectorWrap" style="display: none;">
-            <span style="font-size:11px; color:var(--text-muted); font-weight:700;">🏢 ESPACIO:</span>
-            <select class="org-select-dropdown" id="selectActiveOrg" onchange="window.timelineApp.switchOrganization(this.value)"></select>
-            <button class="btn-primary" onclick="window.timelineApp.openCreateTenantModal()" style="font-size:11px; padding:3px 7px; background:#0F766E;" title="Crear nueva empresa con base de datos propia">+ Empresa</button>
-          </div>
           <button class="btn-hamburger" onclick="window.timelineApp.toggleMobileSidebar()" aria-label="Abrir menú">☰</button>
           <!-- Marca e Identidad de la Consultora en la Cabecera -->
           <div class="header-company-brand" id="headerCompanyBrand" style="display:flex; align-items:center; gap:10px; padding-right:12px; border-right:1px solid rgba(51,65,85,0.5);">
@@ -2819,13 +2794,13 @@ body {
           <div class="timescale-segmented-control">
             <span class="scale-label" style="font-size:11px; color:var(--text-muted); font-weight:700; padding:0 8px; text-transform:uppercase;">Vista:</span>
             <button class="btn-timescale-mode active" id="btnScaleDias" onclick="window.timelineApp.setScaleMode('dias')" title="Vista diaria detallada (ideal 1 a 30 días)">
-              📅 Días
+              📅 <span class="scale-btn-text">Días</span>
             </button>
             <button class="btn-timescale-mode" id="btnScaleSemanas" onclick="window.timelineApp.setScaleMode('semanas')" title="Vista semanal táctica (ideal 1 a 6 meses)">
-              📊 Semanas
+              📊 <span class="scale-btn-text">Semanas</span>
             </button>
             <button class="btn-timescale-mode" id="btnScaleMeses" onclick="window.timelineApp.setScaleMode('meses')" title="Vista mensual estratégica / multianual (proyectos de más de 1 año)">
-              📈 Meses (Anual)
+              📈 <span class="scale-btn-text">Meses (Anual)</span>
             </button>
           </div>
 
@@ -3518,74 +3493,6 @@ body {
 
   
   <!-- MODAL: CREAR NUEVA EMPRESA / USUARIO (BASE DE DATOS INDEPENDIENTE) -->
-  <div class="modal-backdrop" id="createTenantModal">
-    <div class="modal-dialog" style="max-width:560px;">
-      <div class="modal-header">
-        <h3>NUEVA EMPRESA / ESPACIO DE TRABAJO</h3>
-        <button class="btn-close-modal" onclick="window.timelineApp.closeCreateTenantModal()">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
-          Crea una nueva cuenta de acceso. Cada empresa tiene una <strong>base de datos completamente independiente</strong> con su propio equipo de profesionales, nombre corporativo y proyectos aislados.
-        </p>
-
-        <form id="tenantForm" onsubmit="event.preventDefault(); window.timelineApp.saveTenantModal();">
-          <div class="form-group">
-            <label for="tOrgName">Nombre de la Empresa / Estudio Consultor <span style="color:var(--accent-rose);">*</span></label>
-            <input type="text" id="tOrgName" class="input-field" placeholder="Ej. Consultora Austral Arquitectura" required>
-          </div>
-
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="tBaseCity">Sede Principal / Comuna <span style="color:var(--accent-rose);">*</span></label>
-              <input type="text" id="tBaseCity" class="input-field" placeholder="Ej. Punta Arenas" value="Punta Arenas" required>
-            </div>
-            <div class="form-group">
-              <label for="tRut">RUT de la Empresa (Opcional)</label>
-              <input type="text" id="tRut" class="input-field" placeholder="76.123.456-7">
-            </div>
-          </div>
-
-          <div class="edit-form-section-title" style="margin-top:10px;">Credenciales del Usuario Administrador de la Empresa</div>
-
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="tUsername">Nombre de Usuario para Login <span style="color:var(--accent-rose);">*</span></label>
-              <input type="text" id="tUsername" class="input-field" placeholder="Ej. austral_admin" required>
-            </div>
-            <div class="form-group">
-              <label for="tPassword">Contraseña de Acceso <span style="color:var(--accent-rose);">*</span></label>
-              <input type="password" id="tPassword" class="input-field" placeholder="••••••••" required>
-            </div>
-          </div>
-
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="tRepName">Nombre del Representante / Jefe <span style="color:var(--accent-rose);">*</span></label>
-              <input type="text" id="tRepName" class="input-field" placeholder="Ej. Esteban Gómez" required>
-            </div>
-            <div class="form-group">
-              <label for="tEmail">Correo Electrónico de Contacto</label>
-              <input type="email" id="tEmail" class="input-field" placeholder="contacto@austral.cl">
-            </div>
-          </div>
-
-          <div style="font-size:11px; color:#94A3B8; background:rgba(30,41,59,0.5); padding:10px 12px; border-radius:6px; margin-top:8px; line-height:1.4;">
-            🔒 <strong>Aislamiento Total Garantizado:</strong> Este usuario solo podrá ver, crear y modificar los proyectos y personas de su propia empresa. No tendrá acceso a los datos de otras consultoras.
-          </div>
-        </form>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="window.timelineApp.closeCreateTenantModal()">Cancelar</button>
-        <button class="btn-primary" onclick="window.timelineApp.saveTenantModal()" style="background:#2563EB;">
-          Crear Empresa y Base de Datos
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- NOTIFICACIÓN TOAST -->
   <div class="toast-notification" id="appToast">Operación realizada con éxito</div>
 
@@ -5586,85 +5493,6 @@ class SupabaseService {
         headers: await this.getHeaders()
       });
     } catch (e) {}
-  }
-
-    async createTenantOrganization(data) {
-    const orgId = generateUUID();
-    const memberId = generateUUID();
-    const projectId = generateUUID();
-
-    try {
-      // A) Crear Organización
-      const orgRow = {
-        id: orgId,
-        name: data.orgName,
-        base_city: data.baseCity || 'Chile',
-        rut: data.rut || null
-      };
-      await fetch(`${this.baseUrl}/organizations`, {
-        method: 'POST',
-        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
-        body: JSON.stringify([orgRow])
-      });
-
-      // B) Crear Usuario Administrador de la Empresa
-      const memberRow = {
-        id: memberId,
-        org_id: orgId,
-        username: data.username,
-        name: data.repName,
-        email: data.email || `${data.username}@consultora.cl`,
-        role: 'admin_empresa',
-        avatar_color: '#2563EB',
-        base_location: data.baseCity || 'Chile',
-        password: data.password
-      };
-      await fetch(`${this.baseUrl}/team_members`, {
-        method: 'POST',
-        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
-        body: JSON.stringify([memberRow])
-      });
-
-      // C) Crear Proyecto Inicial Limpio para esa empresa
-      const prjRow = {
-        id: projectId,
-        org_id: orgId,
-        code: 'PRJ-01',
-        name: `Proyecto Inicial ${data.orgName}`,
-        client: 'Mandante Principal',
-        mandante: 'Mandante Principal',
-        project_type: 'Consultoría Arquitectura',
-        region: 'Chile',
-        commune: data.baseCity || 'Chile',
-        responsible_id: memberId,
-        status: 'en_desarrollo',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: '2027-12-31',
-        color: '#2563EB',
-        progress: 0,
-        description: `Espacio de trabajo creado para ${data.orgName}.`
-      };
-      await fetch(`${this.baseUrl}/projects`, {
-        method: 'POST',
-        headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
-        body: JSON.stringify([prjRow])
-      });
-
-      return { success: true, orgId, memberId };
-    } catch (e) {
-      console.error('Error al crear tenant:', e);
-      return { success: false, error: e.message };
-    }
-  }
-
-  async fetchAllOrganizations() {
-    try {
-      const res = await fetch(`${this.baseUrl}/organizations?select=*&order=name.asc`, {
-        headers: await this.getHeaders()
-      });
-      if (res.ok) return await res.json();
-    } catch (e) {}
-    return [];
   }
 
   async saveOrganization(org) {
@@ -8625,7 +8453,6 @@ if (!data) {
     this.state.company = data.company;
     this.state.supabase.isConnected = true;
     this.updateCompanyBrandDisplay();
-    this.updateAdminOrgSelector();
 
     this.saveState();
     this.runConflictAnalysis?.();
@@ -9138,84 +8965,6 @@ if (!data) {
       } else {
         badge.style.display = 'none';
       }
-    }
-  }
-
-
-  // --- MULTI-TENANCY: GESTIÓN DE ESPACIOS DE TRABAJO ---
-  async updateAdminOrgSelector() {
-    const wrap = document.getElementById('adminOrgSelectorWrap');
-    const select = document.getElementById('selectActiveOrg');
-    if (!wrap || !select) return;
-
-    if (this.isAdmin()) {
-      wrap.style.display = 'flex';
-      const orgs = await this.supabaseService.fetchAllOrganizations();
-      if (orgs.length > 0) {
-        select.innerHTML = orgs.map(o => 
-          `<option value="${o.id}" ${o.id === this.state.currentOrgId ? 'selected' : ''}>${escapeHtml(o.name)}</option>`
-        ).join('');
-      }
-    } else {
-      wrap.style.display = 'none';
-    }
-  }
-
-  async switchOrganization(orgId) {
-    if (!orgId) return;
-    this.state.currentOrgId = orgId;
-    this.showToast('Cambiando a espacio de trabajo seleccionado...');
-    await this.connectSupabase(false);
-    this.showToast(`✓ Espacio activo: ${this.state.company?.name || 'Empresa'}`);
-  }
-
-  openCreateTenantModal() {
-    const modal = document.getElementById('createTenantModal');
-    if (!modal) return;
-    document.getElementById('tOrgName').value = '';
-    document.getElementById('tBaseCity').value = 'Punta Arenas';
-    document.getElementById('tRut').value = '';
-    document.getElementById('tUsername').value = '';
-    document.getElementById('tPassword').value = '';
-    document.getElementById('tRepName').value = '';
-    document.getElementById('tEmail').value = '';
-    modal.classList.add('is-open');
-    setTimeout(() => document.getElementById('tOrgName').focus(), 80);
-  }
-
-  closeCreateTenantModal() {
-    const modal = document.getElementById('createTenantModal');
-    if (modal) modal.classList.remove('is-open');
-  }
-
-  async saveTenantModal() {
-    const orgName = document.getElementById('tOrgName').value.trim();
-    const baseCity = document.getElementById('tBaseCity').value.trim();
-    const rut = document.getElementById('tRut').value.trim();
-    const username = document.getElementById('tUsername').value.trim().toLowerCase();
-    const password = document.getElementById('tPassword').value.trim();
-    const repName = document.getElementById('tRepName').value.trim();
-    const email = document.getElementById('tEmail').value.trim();
-
-    if (!orgName || !username || !password || !repName) {
-      alert('Por favor completa todos los campos requeridos (*).');
-      return;
-    }
-
-    this.showToast(`Creando espacio para "${orgName}" en la nube...`);
-    const res = await this.supabaseService.createTenantOrganization({
-      orgName, baseCity, rut, username, password, repName, email
-    });
-
-    if (res && res.success) {
-      this.closeCreateTenantModal();
-      this.showToast(`✓ Empresa "${orgName}" y usuario "${username}" creados con base de datos propia.`);
-      await this.updateAdminOrgSelector();
-      if (confirm(`Empresa "${orgName}" creada con éxito.\n\n¿Deseas cambiarte ahora a su espacio de trabajo?`)) {
-        await this.switchOrganization(res.orgId);
-      }
-    } else {
-      alert(`Error al crear empresa: ${res?.error || 'No se pudo completar'}`);
     }
   }
 
