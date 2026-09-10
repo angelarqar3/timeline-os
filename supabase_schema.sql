@@ -53,6 +53,8 @@ CREATE TABLE organizations (
     rut TEXT,
     base_city TEXT DEFAULT 'Quillota',
     google_client_id TEXT,
+    logo_symbol TEXT,
+    logo_color TEXT DEFAULT '#2563EB',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
