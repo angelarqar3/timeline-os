@@ -2405,24 +2405,66 @@ body {
   .top-header {
     padding: 8px 10px !important;
     gap: 8px !important;
-    flex-wrap: wrap !important;
-  }
-
-  .header-left-tools {
-    width: 100% !important;
-    gap: 8px !important;
-  }
-
-  .scale-controls-group {
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
     overflow-x: auto !important;
-    max-width: 100% !important;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
 
-  .nav-temporal-group {
-    overflow-x: auto !important;
-    max-width: 100% !important;
-    -webkit-overflow-scrolling: touch;
+  .top-header::-webkit-scrollbar {
+    display: none;
+  }
+
+  .header-left-tools,
+  .header-right-actions {
+    width: auto !important;
+    flex-wrap: nowrap !important;
+    flex-shrink: 0 !important;
+    gap: 6px !important;
+  }
+
+  /* La info de empresa (nombre/ciudad) ya está en el sidebar; se oculta en
+     móvil para dejar espacio a los controles funcionales */
+  .header-company-brand .company-header-meta {
+    display: none !important;
+  }
+
+  .header-company-brand {
+    padding-right: 6px !important;
+  }
+
+  /* Ocultamos la etiqueta "VISTA:" (queda solo el ícono de cada botón) */
+  .timescale-segmented-control .scale-label {
+    display: none !important;
+  }
+
+  .timescale-segmented-control,
+  .nav-temporal-group,
+  .org-selector-bar {
+    flex-shrink: 0 !important;
+  }
+
+  .btn-timescale-mode,
+  .btn-temporal-quick,
+  .btn-today-primary,
+  .btn-toggle-filters,
+  .btn-quick-milestone,
+  .btn-quick-project {
+    white-space: nowrap !important;
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .btn-quick-milestone kbd {
+    display: none !important;
+  }
+
+  .conflict-pill-alert {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 11px !important;
+    padding: 5px 8px !important;
   }
 
   .timeline-header-label-col,
@@ -2801,7 +2843,7 @@ body {
             <button class="btn-temporal-quick" id="btnPanLeft" title="Desplazar atrás">◀</button>
             <button class="btn-temporal-quick" id="btnPanRight" title="Desplazar adelante">▶</button>
 
-            <input type="date" id="navDatePicker" class="date-picker-nav" title="Ir a fecha específica" value="2026-09-07">
+            <input type="date" id="navDatePicker" class="date-picker-nav" title="Ir a fecha específica">
           </div>
 
         </div>
@@ -3573,6 +3615,19 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+/**
+ * Fecha real de HOY (yyyy-mm-dd, zona local). Función global para que
+ * clases estáticas como ConflictEngine puedan usarla sin depender de
+ * una instancia de TimelineApp.
+ */
+function getTodayStrGlobal() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 function generateUUID() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -4324,8 +4379,10 @@ class ConflictEngine {
     });
 
     // 3. GENERACIÓN DE ESTADÍSTICAS DEL PANEL DE ALERTAS
-    const todayIso = '2026-09-07';
-    const next7DaysIso = '2026-09-14';
+    const todayIso = getTodayStrGlobal();
+    const next7 = new Date();
+    next7.setDate(next7.getDate() + 7);
+    const next7DaysIso = `${next7.getFullYear()}-${String(next7.getMonth() + 1).padStart(2, '0')}-${String(next7.getDate()).padStart(2, '0')}`;
 
     const personConflicts = conflicts.filter(c => c.type === 'persona').length;
     const territorialConflicts = conflicts.filter(c => c.type === 'territorial').length;
@@ -4399,8 +4456,8 @@ class TimelineRenderer {
     this.container = document.getElementById(containerId);
     this.options = {
       scaleMode: 'dias', // 'dias' | 'semanas' | 'meses'
-      startDate: new Date('2026-09-07T00:00:00'),
-      todayDateStr: '2026-09-07',
+      startDate: new Date(`${getTodayStrGlobal()}T00:00:00`),
+      todayDateStr: getTodayStrGlobal(),
       viewMode: 'empresa', // 'empresa' | 'proyecto' | 'persona'
       activeProjectId: null,
       activeMemberId: null,
@@ -6191,7 +6248,7 @@ class TimelineApp {
       activeProjectId: null,
       activeMemberId: null,
       timescaleDays: 15,
-      currentStartDate: new Date('2026-09-07T00:00:00'),
+      currentStartDate: new Date(`${getTodayStrGlobal()}T00:00:00`),
       filters: {
         projectId: 'all',
         responsibleId: 'all',
@@ -6467,10 +6524,10 @@ class TimelineApp {
 
   goToToday() {
     this.todayStr = this.getRealTodayStr();
-    this.state.currentStartDate = new Date();
+    this.state.currentStartDate = new Date(`${this.todayStr}T00:00:00`);
     if (this.timelineRenderer) {
       this.timelineRenderer.options.todayDateStr = this.todayStr;
-      this.timelineRenderer.scrollToDate(this.todayStr);
+      this.timelineRenderer.setDateRange(this.state.currentStartDate, this.state.timescaleDays);
     }
     this.showToast(`Línea temporal alineada en HOY (${formatDateDDMMYYYY(this.todayStr)}) al lado izquierdo`);
   }
@@ -6527,9 +6584,11 @@ class TimelineApp {
   }
 
   panTimeline(daysOffset) {
-    const vp = document.getElementById('timelineViewport');
-    if (vp) {
-      vp.scrollBy({ left: daysOffset * 120, behavior: 'smooth' });
+    const newDate = new Date(this.state.currentStartDate);
+    newDate.setDate(newDate.getDate() + daysOffset);
+    this.state.currentStartDate = newDate;
+    if (this.timelineRenderer) {
+      this.timelineRenderer.setDateRange(this.state.currentStartDate, this.state.timescaleDays);
     }
   }
 
@@ -7202,7 +7261,7 @@ class TimelineApp {
       <div class="m-detail-grid">
         <div class="m-detail-card">
           <div class="card-label">📅 Fecha & Horario</div>
-          <div class="card-value">${m.date} ${m.timeStart ? `• ${m.timeStart} ${m.timeEnd ? 'a ' + m.timeEnd : ''}` : '(Sin hora especificada)'}</div>
+          <div class="card-value">${formatDateDDMMYYYY(m.date)} ${m.timeStart ? `• ${m.timeStart} ${m.timeEnd ? 'a ' + m.timeEnd : ''}` : '(Sin hora especificada)'}</div>
         </div>
         <div class="m-detail-card">
           <div class="card-label">👤 Responsable</div>
@@ -8306,6 +8365,7 @@ class TimelineApp {
 
     const datePicker = document.getElementById('navDatePicker');
     if (datePicker) {
+      datePicker.value = this.getRealTodayStr();
       datePicker.addEventListener('change', (e) => this.goToDate(e.target.value));
     }
   }
