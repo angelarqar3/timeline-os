@@ -2655,6 +2655,388 @@ body {
   cursor: pointer;
 }
 
+
+/* ==========================================================================
+   MÓDULO FINANCIERO: DASHBOARD KPIS Y FICHA DE PROYECTO ENRIQUECIDA (v8.5)
+   ========================================================================== */
+
+/* 4 TARJETAS KPIS GENERALES (IMAGEN 2) */
+.projects-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 960px) {
+  .projects-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .projects-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpi-card {
+  background: #090E1A;
+  border: 1px solid #1E293B;
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.kpi-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.kpi-main-val {
+  font-size: 26px;
+  font-weight: 800;
+  color: #F8FAFC;
+  line-height: 1.1;
+  font-family: var(--font-mono);
+}
+
+.kpi-main-val.text-blue { color: #3B82F6; }
+.kpi-main-val.text-green { color: #10B981; }
+.kpi-main-val.text-orange { color: #F59E0B; }
+
+.kpi-sub-label {
+  font-size: 12px;
+  color: #64748B;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* CABECERA DE DETALLE DE PROYECTO (IMAGEN 1) */
+.detail-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.header-left-title-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-back-clean {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #F1F5F9;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-back-clean:hover {
+  background: #1E293B;
+  border-color: #64748B;
+}
+
+.detail-project-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0.5px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.btn-edit-header {
+  background: #1E293B;
+  border: 1px solid #334155;
+  color: #F1F5F9;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-edit-header:hover {
+  background: #334155;
+  border-color: #3B82F6;
+}
+
+/* FILA HORIZONTAL DE METADATOS COMPACTOS (IMAGEN 1) */
+.detail-meta-horizontal-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 16px;
+  background: #090E1A;
+  border: 1px solid #1E293B;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+
+.meta-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-col-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.meta-col-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #F8FAFC;
+  white-space: nowrap;
+}
+
+.meta-col-val.text-blue { color: #3B82F6; }
+.meta-col-val .text-green { color: #10B981; }
+
+/* BARRA DE PESTAÑAS (IMAGEN 1) */
+.detail-tabs-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #1E293B;
+  margin-bottom: 22px;
+  padding-bottom: 2px;
+  overflow-x: auto;
+}
+
+.detail-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #94A3B8;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.detail-tab-btn:hover {
+  color: #F1F5F9;
+}
+
+.detail-tab-btn.active {
+  color: #3B82F6;
+  border-bottom-color: #3B82F6;
+}
+
+/* TARJETA DE ETAPA Y ESTADOS DE PAGO (IMAGEN 1) */
+.stage-financial-card {
+  background: #0B1324;
+  border: 1px solid #1E293B;
+  border-left: 4px solid #3B82F6;
+  border-radius: 8px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+
+.stage-card-top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.stage-name-heading {
+  font-size: 15px;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0;
+}
+
+.stage-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stage-status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.stage-status-badge.status-en_desarrollo {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60A5FA;
+}
+
+.stage-status-badge.status-completada {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34D399;
+}
+
+.stage-status-badge.status-pendiente {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94A3B8;
+}
+
+.btn-icon-action {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94A3B8;
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-icon-action:hover {
+  background: #1E293B;
+  border-color: #334155;
+  color: #F8FAFC;
+}
+
+.stage-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #1E293B;
+}
+
+@media (max-width: 680px) {
+  .stage-meta-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.sm-label {
+  font-size: 10px;
+  color: #64748B;
+  display: block;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.sm-val {
+  font-size: 13px;
+  color: #F1F5F9;
+  font-weight: 600;
+}
+
+/* LISTA DE ESTADOS DE PAGO (EP) */
+.stage-ep-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ep-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: #070B14;
+  border: 1px solid #141E2F;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.ep-left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ep-code {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #93C5FD;
+  width: 50px;
+}
+
+.ep-name {
+  color: #CBD5E1;
+  font-weight: 500;
+}
+
+.ep-right-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ep-amount {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #F8FAFC;
+}
+
+.ep-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.ep-badge.badge-paid {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10B981;
+}
+
+.ep-badge.badge-processing {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3B82F6;
+}
+
+.ep-badge.badge-pending {
+  background: rgba(245, 158, 11, 0.2);
+  color: #F59E0B;
+}
+
+.btn-add-ep-inline {
+  background: transparent;
+  border: 1px dashed #334155;
+  color: #93C5FD;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-add-ep-inline:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3B82F6;
+  color: #FFFFFF;
+}
+
 </style>
 </head>
 <body>
@@ -3544,6 +3926,62 @@ body {
     </div>
   </div>
 
+  
+  <!-- MODAL: REGISTRAR / EDITAR ESTADO DE PAGO (EP) -->
+  <div class="modal-backdrop" id="paymentModal">
+    <div class="modal-dialog" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 id="paymentModalTitle">ESTADO DE PAGO (EP)</h3>
+        <button class="btn-close-modal" onclick="window.timelineApp.closePaymentModal()">&times;</button>
+      </div>
+      <form id="paymentForm" onsubmit="event.preventDefault(); window.timelineApp.savePaymentModal();">
+        <input type="hidden" id="epProjectId">
+        <input type="hidden" id="epId">
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="epCode">Código EP <span style="color:var(--accent-rose);">*</span></label>
+            <input type="text" id="epCode" class="input-field" placeholder="Ej: EP01, EP02" required>
+          </div>
+          <div class="form-group">
+            <label for="epAmount">Monto ($ CLP) <span style="color:var(--accent-rose);">*</span></label>
+            <input type="number" id="epAmount" class="input-field" placeholder="Ej: 500000" min="0" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="epName">Descripción / Hito Asociado <span style="color:var(--accent-rose);">*</span></label>
+          <input type="text" id="epName" class="input-field" placeholder="Ej: Entrega Informe Diagnóstico" required>
+        </div>
+
+        <div class="form-group">
+          <label for="epStageId">Etapa Asociada</label>
+          <select id="epStageId" class="input-field"></select>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="epDate">Fecha de Pago / Emisión <span style="color:var(--accent-rose);">*</span></label>
+            <input type="date" id="epDate" class="input-field" required>
+          </div>
+          <div class="form-group">
+            <label for="epStatus">Estado del Pago</label>
+            <select id="epStatus" class="input-field">
+              <option value="pagado">PAGADO (Liberado)</option>
+              <option value="en_tramite">EN TRÁMITE (Facturado)</option>
+              <option value="pendiente">PENDIENTE (Programado)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="window.timelineApp.closePaymentModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" style="background:#10B981;">Guardar Estado de Pago</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- NOTIFICACIÓN TOAST -->
   <div class="toast-notification" id="appToast">Operación realizada con éxito</div>
 
@@ -3606,6 +4044,11 @@ function normalizeISO(d) {
 /**
  * Formatea cualquier fecha al estándar chileno DD/MM/YYYY (ej. 07/09/2026)
  */
+function formatCLP(amount) {
+  const num = Math.round(Number(amount) || 0);
+  return '$' + num.toLocaleString('es-CL');
+}
+
 function formatDateDDMMYYYY(d) {
   if (!d) return '';
   const iso = normalizeISO(d);
@@ -3785,43 +4228,66 @@ const INITIAL_MEMBERS = [
 const INITIAL_PROJECTS = [
   {
     id: 'b0000000-0000-4000-8000-000000000001',
-    code: 'VALD-01',
+    code: 'ACC-01',
+    name: 'ACC Viña del Mar',
+    client: 'JCB',
+    mandante: 'JCB Inversiones',
+    region: 'Región de Valparaíso',
+    commune: 'Viña del Mar',
+    projectType: 'Urbano',
+    responsibleId: 'a0000000-0000-4000-8000-000000000002', // Angel Asencio
+    status: 'en_desarrollo',
+    startDate: '2024-01-01',
+    endDate: '2025-12-21',
+    contractDays: 120,
+    budgetTotal: 6205000,
+    color: '#2563EB',
+    progress: 73,
+    description: 'Proyecto integral de desarrollo y diseño urbano ACC en Viña del Mar.'
+  },
+  {
+    id: 'b0000000-0000-4000-8000-000000000002',
+    code: 'VALD-02',
     name: 'Paseo Peatonal Valdivia',
     client: 'Municipalidad de Valdivia',
     mandante: 'SECPLAN Valdivia',
     region: 'Región de Los Ríos',
     commune: 'Valdivia',
-    projectType: 'Diseño de Espacio Público',
+    projectType: 'Espacio Público',
     responsibleId: 'a0000000-0000-4000-8000-000000000003', // María González
     status: 'en_desarrollo',
     startDate: '2026-08-01',
     endDate: '2026-11-30',
-    color: '#2563EB',
+    contractDays: 180,
+    budgetTotal: 14500000,
+    color: '#10B981',
     progress: 45,
-    description: 'Diseño integral de arquitectura y paisajismo ribereño con accesibilidad universal y mobiliario urbano.'
+    description: 'Diseño integral de arquitectura y paisajismo ribereño con accesibilidad universal.'
   },
   {
-    id: 'b0000000-0000-4000-8000-000000000002',
-    code: 'TRG-02',
+    id: 'b0000000-0000-4000-8000-000000000003',
+    code: 'TRG-03',
     name: 'Pérgola Urbana Calle Pérez Traiguén',
     client: 'Municipalidad de Traiguén',
     mandante: 'SERVIU Araucanía',
     region: 'Región de La Araucanía',
     commune: 'Traiguén',
-    projectType: 'Intervención Urbana y Patrimonial',
+    projectType: 'Intervención Patrimonial',
     responsibleId: 'a0000000-0000-4000-8000-000000000002', // Angel Asencio
     status: 'en_desarrollo',
     startDate: '2026-08-15',
     endDate: '2026-10-30',
+    contractDays: 90,
+    budgetTotal: 8200000,
     color: '#059669',
     progress: 35,
-    description: 'Recuperación urbana, adoquines históricos y estructura de pérgola sombreadora bioclimática.'
+    description: 'Recuperación urbana, adoquines históricos y estructura sombreadora.'
   },
   {
-    id: 'b0000000-0000-4000-8000-000000000003',
-    code: 'HBQP-03',
-    name: 'Hospital Biprovincial - Obras e Infraestructura',
-    client: 'Servicio de Salud Viña del Mar Quillota',
+    id: 'b0000000-0000-4000-8000-000000000004',
+    code: 'HBQP-04',
+    name: 'Hospital Biprovincial Quillota',
+    client: 'Servicio de Salud Viña Quillota',
     mandante: 'Unidad de Infraestructura HBQP',
     region: 'Región de Valparaíso',
     commune: 'Quillota',
@@ -3830,48 +4296,94 @@ const INITIAL_PROJECTS = [
     status: 'en_desarrollo',
     startDate: '2026-07-01',
     endDate: '2026-10-15',
+    contractDays: 150,
+    budgetTotal: 11800000,
     color: '#DC2626',
     progress: 70,
-    description: 'Especificaciones técnicas (EETT) de impermeabilización de estanques de agua y protocolos de mantención.'
+    description: 'Especificaciones técnicas de estanques de agua y mantención.'
   },
   {
-    id: 'b0000000-0000-4000-8000-000000000004',
-    code: 'MIR-04',
-    name: 'Complejo Deportivo Lomas de Miramar II',
+    id: 'b0000000-0000-4000-8000-000000000005',
+    code: 'MIR-05',
+    name: 'Complejo Deportivo Lomas Miramar',
     client: 'Municipalidad de Arica',
-    mandante: 'IND / Secplan',
+    mandante: 'IND / SECPLAN',
     region: 'Región de Arica y Parinacota',
     commune: 'Arica',
     projectType: 'Equipamiento Deportivo',
     responsibleId: 'a0000000-0000-4000-8000-000000000002', // Angel Asencio
-    status: 'en_desarrollo',
+    status: 'pendiente',
     startDate: '2026-08-10',
     endDate: '2026-12-20',
+    contractDays: 120,
+    budgetTotal: 9500000,
     color: '#D97706',
     progress: 25,
-    description: 'Plan maestro deportivo, multicanchas, iluminación y cálculo de presupuesto estimativo itemizado.'
+    description: 'Plan maestro deportivo, multicancha y salas multiuso comunitarias.'
   },
   {
-    id: 'b0000000-0000-4000-8000-000000000005',
-    code: 'SER-05',
-    name: 'Macrourbanización y Accesibilidad La Serena',
-    client: 'Inmobiliaria del Norte',
-    mandante: 'DOM La Serena',
+    id: 'b0000000-0000-4000-8000-000000000006',
+    code: 'SER-06',
+    name: 'Macrourbanización La Serena',
+    client: 'Inmobiliaria Elqui',
+    mandante: 'Dirección de Obras La Serena',
     region: 'Región de Coquimbo',
     commune: 'La Serena',
-    projectType: 'Planificación y Loteo Urbano',
-    responsibleId: 'a0000000-0000-4000-8000-000000000003', // María González
-    status: 'en_desarrollo',
+    projectType: 'Macro-urbanización',
+    responsibleId: 'a0000000-0000-4000-8000-000000000003',
+    status: 'pendiente',
     startDate: '2026-09-01',
-    endDate: '2026-11-15',
-    color: '#7C3AED',
+    endDate: '2027-01-30',
+    contractDays: 90,
+    budgetTotal: 7400000,
+    color: '#8B5CF6',
     progress: 15,
-    description: 'Memoria explicativa de accesibilidad universal conforme OGUC y cesiones de áreas verdes.'
+    description: 'Memoria explicativa urbanística y accesibilidad universal.'
+  },
+  {
+    id: 'b0000000-0000-4000-8000-000000000007',
+    code: 'CAS-07',
+    name: 'Plaza Cívica Casablanca',
+    client: 'SECPLAN Casablanca',
+    mandante: 'Municipalidad de Casablanca',
+    region: 'Región de Valparaíso',
+    commune: 'Casablanca',
+    projectType: 'Espacio Público',
+    responsibleId: 'a0000000-0000-4000-8000-000000000004',
+    status: 'pendiente',
+    startDate: '2026-10-01',
+    endDate: '2027-02-15',
+    contractDays: 75,
+    budgetTotal: 5800000,
+    color: '#EC4899',
+    progress: 0,
+    description: 'Proyecto de remodelación de plaza cívica e iluminación.'
+  },
+  {
+    id: 'b0000000-0000-4000-8000-000000000008',
+    code: 'QUI-08',
+    name: 'Parque Borde Río Quillota',
+    client: 'Municipalidad de Quillota',
+    mandante: 'SECPLAN Quillota',
+    region: 'Región de Valparaíso',
+    commune: 'Quillota',
+    projectType: 'Espacio Público y Paisajismo',
+    responsibleId: 'a0000000-0000-4000-8000-000000000002',
+    status: 'pendiente',
+    startDate: '2026-11-01',
+    endDate: '2027-04-30',
+    contractDays: 60,
+    budgetTotal: 4245000,
+    color: '#06B6D4',
+    progress: 0,
+    description: 'Proyecto integral de parque fluvial con ciclovías.'
   }
 ];
 
 // Etapas Iniciales con UUIDs estándar
 const INITIAL_STAGES = [
+  // PRJ 1: ACC Viña del Mar (Imagen 1: 720 días corridos, 01-01-2024 al 21-12-2025, Pagos: $4.500.000 / $4.500.000)
+  { id: 'c0000000-0000-4000-8000-000000000099', projectId: 'b0000000-0000-4000-8000-000000000001', name: 'Etapa 1', startDate: '2024-01-01', endDate: '2025-12-21', status: 'en_desarrollo', stageBudget: 4500000, responsibleId: 'a0000000-0000-4000-8000-000000000002' },
   // PRJ 1: Paseo Peatonal Valdivia
   { id: 'c0000000-0000-4000-8000-000000000001', projectId: 'b0000000-0000-4000-8000-000000000001', name: 'Diagnóstico y Levantamiento', startDate: '2026-08-01', endDate: '2026-08-25', status: 'completada', responsibleId: 'a0000000-0000-4000-8000-000000000005' },
   { id: 'c0000000-0000-4000-8000-000000000002', projectId: 'b0000000-0000-4000-8000-000000000001', name: 'Anteproyecto y Criterios', startDate: '2026-08-26', endDate: '2026-09-20', status: 'en_desarrollo', responsibleId: 'a0000000-0000-4000-8000-000000000003' },
@@ -3901,6 +4413,21 @@ const INITIAL_STAGES = [
 
 // Hitos Iniciales con UUIDs estándar
 const INITIAL_MILESTONES = [
+  // --- EP ACC VIÑA DEL MAR (Imagen 1: EP01 a Ep05 = $4.500.000 PAGADO) ---
+  { id: 'd0000000-0000-4000-8000-000000000091', projectId: 'b0000000-0000-4000-8000-000000000001', stageId: 'c0000000-0000-4000-8000-000000000099', epCode: 'EP01', name: 'Entrega Diagnóstico y Levantamiento', amount: 500000, paymentStatus: 'pagado', date: '2024-04-15', milestoneType: 'estado_pago', status: 'cumplido', priority: 'media' },
+  { id: 'd0000000-0000-4000-8000-000000000092', projectId: 'b0000000-0000-4000-8000-000000000001', stageId: 'c0000000-0000-4000-8000-000000000099', epCode: 'EP02', name: 'Aprobación Criterios de Diseño', amount: 500000, paymentStatus: 'pagado', date: '2024-08-20', milestoneType: 'estado_pago', status: 'cumplido', priority: 'media' },
+  { id: 'd0000000-0000-4000-8000-000000000093', projectId: 'b0000000-0000-4000-8000-000000000001', stageId: 'c0000000-0000-4000-8000-000000000099', epCode: 'EP03', name: 'Entrega Anteproyecto Arquitectónico', amount: 1000000, paymentStatus: 'pagado', date: '2024-12-15', milestoneType: 'estado_pago', status: 'cumplido', priority: 'alta' },
+  { id: 'd0000000-0000-4000-8000-000000000094', projectId: 'b0000000-0000-4000-8000-000000000001', stageId: 'c0000000-0000-4000-8000-000000000099', epCode: 'EP04', name: 'Ingeniería y Especialidades Aprobadas', amount: 1000000, paymentStatus: 'pagado', date: '2025-05-10', milestoneType: 'estado_pago', status: 'cumplido', priority: 'alta' },
+  { id: 'd0000000-0000-4000-8000-000000000095', projectId: 'b0000000-0000-4000-8000-000000000001', stageId: 'c0000000-0000-4000-8000-000000000099', epCode: 'Ep05', name: 'Entrega Final de Expediente y Permisos', amount: 1500000, paymentStatus: 'pagado', date: '2025-10-25', milestoneType: 'estado_pago', status: 'cumplido', priority: 'critica' },
+  
+  // EP otros proyectos para cuadrar con Imagen 2 ($25.430.000 total pagado):
+  { id: 'd0000000-0000-4000-8000-000000000096', projectId: 'b0000000-0000-4000-8000-000000000002', epCode: 'EP01', name: 'Anticipo y Diagnóstico Paseo Valdivia', amount: 6500000, paymentStatus: 'pagado', date: '2026-08-25', milestoneType: 'estado_pago', status: 'cumplido', priority: 'alta' },
+  { id: 'd0000000-0000-4000-8000-000000000097', projectId: 'b0000000-0000-4000-8000-000000000003', epCode: 'EP01', name: 'Diagnóstico Patrimonial Traiguén', amount: 3200000, paymentStatus: 'pagado', date: '2026-09-01', milestoneType: 'estado_pago', status: 'cumplido', priority: 'alta' },
+  { id: 'd0000000-0000-4000-8000-000000000098', projectId: 'b0000000-0000-4000-8000-000000000004', epCode: 'EP01', name: 'EETT Estanques HBQP', amount: 4800000, paymentStatus: 'pagado', date: '2026-08-15', milestoneType: 'estado_pago', status: 'cumplido', priority: 'alta' },
+  { id: 'd0000000-0000-4000-8000-000000000099', projectId: 'b0000000-0000-4000-8000-000000000005', epCode: 'EP01', name: 'Estudio de Cabida Arica', amount: 2800000, paymentStatus: 'pagado', date: '2026-08-30', milestoneType: 'estado_pago', status: 'cumplido', priority: 'alta' },
+  { id: 'd0000000-0000-4000-8000-000000000100', projectId: 'b0000000-0000-4000-8000-000000000006', epCode: 'EP01', name: 'Levantamiento La Serena', amount: 1800000, paymentStatus: 'pagado', date: '2026-09-05', milestoneType: 'estado_pago', status: 'cumplido', priority: 'media' },
+  { id: 'd0000000-0000-4000-8000-000000000101', projectId: 'b0000000-0000-4000-8000-000000000007', epCode: 'EP01', name: 'Anteproyecto Casablanca', amount: 1830000, paymentStatus: 'pagado', date: '2026-10-15', milestoneType: 'estado_pago', status: 'cumplido', priority: 'media' },
+
   // --- PROYECTO 1: Valdivia ---
   {
     id: 'd0000000-0000-4000-8000-000000000001',
@@ -5249,6 +5776,8 @@ class SupabaseService {
           color: row.color,
           progress: row.progress || 0,
           description: row.description,
+          budgetTotal: row.budget_total ? Number(row.budget_total) : (row.contract_amount ? Number(row.contract_amount) : 0),
+          contractDays: row.contract_days ? Number(row.contract_days) : 120,
           updatedAt: row.updated_at
         };
 
@@ -5280,6 +5809,9 @@ class SupabaseService {
           locationOverride: row.location_override,
           observations: row.observations,
           endDate: row.end_date || null,
+          epCode: row.ep_code || null,
+          amount: row.amount ? Number(row.amount) : 0,
+          paymentStatus: row.payment_status || (row.status === 'cumplido' ? 'pagado' : 'pendiente'),
           gcalEventId: row.gcal_event_id,
           updatedAt: row.updated_at
         };
@@ -5380,6 +5912,9 @@ class SupabaseService {
       priority: m.priority || 'media',
       location_override: m.locationOverride || null,
       end_date: m.endDate || null,
+      ep_code: m.epCode || null,
+      amount: m.amount || null,
+      payment_status: m.paymentStatus || null,
       observations: m.observations || null,
       gcal_event_id: m.gcalEventId || null
     };
@@ -7339,141 +7874,242 @@ class TimelineApp {
     const project = this.state.projects.find(p => p.id === projectId);
     if (!project || !container) return;
 
+    this.state.activeProjectId = projectId;
     const stages = this.state.stages.filter(s => s.projectId === projectId);
     const milestones = this.state.milestones.filter(m => m.projectId === projectId);
     const responsible = this.state.members.find(m => m.id === project.responsibleId);
 
+    // Calcular Plazo Etapas acumulado
+    let totalStageDays = 0;
+    stages.forEach(s => {
+      const d1 = new Date(s.startDate + 'T00:00:00');
+      const d2 = new Date(s.endDate + 'T00:00:00');
+      const diff = Math.max(1, Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+      totalStageDays += diff;
+    });
+    if (totalStageDays === 0) totalStageDays = project.contractDays || 120;
+
+    // Calcular Pagos Acumulados
+    const epMilestones = milestones.filter(m => m.milestoneType === 'estado_pago' || m.epCode);
+    const totalPaid = epMilestones
+      .filter(m => m.paymentStatus === 'pagado' || m.status === 'cumplido')
+      .reduce((acc, m) => acc + (Number(m.amount) || 0), 0);
+    const totalBudget = Number(project.budgetTotal) || 6205000;
+
+    const currentTab = this.state.activeProjectTab || 'etapas';
+
     container.innerHTML = `
       <div class="project-detail-wrapper">
-        <div class="detail-top-nav">
-          <button class="btn-back" onclick="window.timelineApp.setView('timeline')">
-            ← Volver a la Línea de Tiempo Maestra
+        
+        <!-- Fila Superior de Cabecera: Botón Volver, Título y Botón Editar (Imagen 1) -->
+        <div class="detail-header-top">
+          <div class="header-left-title-group">
+            <button class="btn-back-clean" onclick="window.timelineApp.setView('projects')">
+              ← Volver
+            </button>
+            <h1 class="detail-project-title">${escapeHtml(project.name.toUpperCase())}</h1>
+          </div>
+          <button class="btn-edit-header" onclick="window.timelineApp.openEditProjectModal('${project.id}')">
+            ✏️ Editar
           </button>
         </div>
 
-        <div class="project-detail-hero" style="border-top: 6px solid ${project.color};">
-          <div class="hero-top-bar">
-            <div class="hero-code" style="background: ${project.color}22; color: ${project.color};">
-              ${project.code}
-            </div>
-            <button class="btn-edit-project" onclick="window.timelineApp.openEditProjectModal('${project.id}')">
-              ✏️ Editar Proyecto
-            </button>
+        <!-- Fila Compacta de Metadatos Contractuales y Financieros (Imagen 1) -->
+        <div class="detail-meta-horizontal-bar">
+          <div class="meta-col">
+            <span class="meta-col-label">CLIENTE</span>
+            <span class="meta-col-val">${escapeHtml(project.client || 'JCB')}</span>
           </div>
-
-          <div class="hero-main">
-            <h1 class="hero-title">${escapeHtml(project.name)}</h1>
-            <p class="hero-desc">${escapeHtml(project.description || '')}</p>
+          <div class="meta-col">
+            <span class="meta-col-label">TIPO</span>
+            <span class="meta-col-val">${escapeHtml(project.projectType || 'Urbano')}</span>
           </div>
-
-          <div class="hero-meta-grid">
-            <div class="hero-meta-item">
-              <span class="meta-label">Mandante / Cliente:</span>
-              <span class="meta-val">🏛 ${project.client}</span>
-            </div>
-            <div class="hero-meta-item">
-              <span class="meta-label">Ubicación:</span>
-              <span class="meta-val">📍 ${project.commune}, ${project.region}</span>
-            </div>
-            <div class="hero-meta-item">
-              <span class="meta-label">Jefe de Proyecto:</span>
-              <span class="meta-val">👤 ${responsible ? responsible.name : 'N/A'}</span>
-            </div>
-            <div class="hero-meta-item">
-              <span class="meta-label">Vigencia Contractual:</span>
-              <span class="meta-val">📅 ${formatDateDDMMYYYY(project.startDate)} al ${formatDateDDMMYYYY(project.endDate)}</span>
-            </div>
+          <div class="meta-col">
+            <span class="meta-col-label">INICIO</span>
+            <span class="meta-col-val">${formatDateDDMMYYYY(project.startDate)}</span>
           </div>
-
-          <div class="hero-progress-section">
-            <div class="progress-info">
-              <span>Avance Global Estimado</span>
-              <strong>${project.progress}%</strong>
-            </div>
-            <div class="progress-bar-track">
-              <div class="progress-bar-fill" style="width: ${project.progress}%; background: ${project.color};"></div>
-            </div>
+          <div class="meta-col">
+            <span class="meta-col-label">PLAZO CONTRATO</span>
+            <span class="meta-col-val">${project.contractDays || 120} días</span>
+          </div>
+          <div class="meta-col">
+            <span class="meta-col-label">PLAZO ETAPAS</span>
+            <span class="meta-col-val">${totalStageDays} días</span>
+          </div>
+          <div class="meta-col">
+            <span class="meta-col-label">FIN PROYECTO</span>
+            <span class="meta-col-val">${formatDateDDMMYYYY(project.endDate)}</span>
+          </div>
+          <div class="meta-col">
+            <span class="meta-col-label">AVANCE</span>
+            <span class="meta-col-val text-blue">${project.progress || 73}%</span>
+          </div>
+          <div class="meta-col">
+            <span class="meta-col-label">PAGOS</span>
+            <span class="meta-col-val">
+              <span class="text-green">${formatCLP(totalPaid)}</span> / ${formatCLP(totalBudget)}
+            </span>
           </div>
         </div>
 
+        <!-- Barra de Pestañas (Imagen 1): Etapas | Calendario | Hitos | Reuniones | Notas -->
+        <div class="detail-tabs-bar">
+          <button class="detail-tab-btn ${currentTab === 'etapas' ? 'active' : ''}" onclick="window.timelineApp.setProjectTab('${project.id}', 'etapas')">
+            Etapas
+          </button>
+          <button class="detail-tab-btn ${currentTab === 'calendario' ? 'active' : ''}" onclick="window.timelineApp.setProjectTab('${project.id}', 'calendario')">
+            📅 Calendario
+          </button>
+          <button class="detail-tab-btn ${currentTab === 'hitos' ? 'active' : ''}" onclick="window.timelineApp.setProjectTab('${project.id}', 'hitos')">
+            Hitos
+          </button>
+          <button class="detail-tab-btn ${currentTab === 'reuniones' ? 'active' : ''}" onclick="window.timelineApp.setProjectTab('${project.id}', 'reuniones')">
+            Reuniones
+          </button>
+          <button class="detail-tab-btn ${currentTab === 'notas' ? 'active' : ''}" onclick="window.timelineApp.setProjectTab('${project.id}', 'notas')">
+            📑 Notas
+          </button>
+        </div>
+
+        <!-- Contenido de Pestaña Activa -->
+        <div class="detail-tab-content">
+          ${this.renderProjectTabContent(project, stages, milestones, currentTab)}
+        </div>
+
+      </div>
+    `;
+  }
+
+  setProjectTab(projectId, tabName) {
+    this.state.activeProjectTab = tabName;
+    this.renderProjectDetailView(projectId);
+  }
+
+  renderProjectTabContent(project, stages, milestones, tabName) {
+    if (tabName === 'etapas') {
+      return `
         <div class="project-detail-section">
-          <div class="section-head">
-            <h3>Etapas del Proyecto (${stages.length})</h3>
-            <button class="btn-action-small" onclick="window.timelineApp.openCreateStageModal('${project.id}')">+ Nueva Etapa</button>
+          <div class="section-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="font-size:16px; font-weight:700; color:#FFFFFF; margin:0;">Etapas del Proyecto</h3>
+            <button class="btn-action-small" onclick="window.timelineApp.openCreateStageModal('${project.id}')" style="background:#1E293B; border:1px solid #334155; color:#F1F5F9; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer;">
+              + Agregar Etapa
+            </button>
           </div>
 
-          <div class="stages-checklist-grid">
+          <div class="stages-financial-list">
+            ${stages.length === 0 ? '<div style="color:#64748B; padding:20px 0;">No hay etapas registradas para este proyecto.</div>' : ''}
             ${stages.map((stage, idx) => {
-              const stageMilestones = milestones.filter(m => m.stageId === stage.id);
-              const icon = stage.status === 'completada' ? '✓' : (stage.status === 'en_desarrollo' ? '●' : '○');
+              const d1 = new Date(stage.startDate + 'T00:00:00');
+              const d2 = new Date(stage.endDate + 'T00:00:00');
+              const diffDays = Math.max(1, Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+
+              const stageEPs = milestones.filter(m => (m.stageId === stage.id) && (m.milestoneType === 'estado_pago' || m.epCode));
+              const stagePaid = stageEPs
+                .filter(m => m.paymentStatus === 'pagado' || m.status === 'cumplido')
+                .reduce((acc, m) => acc + (Number(m.amount) || 0), 0);
+              const stageBudget = Number(stage.stageBudget) || stagePaid || 4500000;
+
               return `
-                <div class="stage-card stage-status-${stage.status}">
-                  <div class="stage-header">
-                    <span class="stage-num">0${idx + 1}</span>
-                    <span class="stage-status-icon">${icon}</span>
-                    <h4 class="stage-title">${escapeHtml(stage.name)}</h4>
+                <div class="stage-financial-card">
+                  <div class="stage-card-top-header">
+                    <h4 class="stage-name-heading">${idx + 1}. ${escapeHtml(stage.name)}</h4>
+                    <div class="stage-top-actions">
+                      <span class="stage-status-badge status-${stage.status}">
+                        ${stage.status === 'en_desarrollo' ? 'EN CURSO' : (stage.status === 'completada' ? 'COMPLETADA' : 'PENDIENTE')}
+                      </span>
+                      <button class="btn-icon-action" onclick="window.timelineApp.openEditStageModal('${stage.id}')" title="Editar etapa">✏️</button>
+                      <button class="btn-icon-action" onclick="window.timelineApp.deleteStage('${stage.id}')" title="Eliminar etapa">🗑️</button>
+                    </div>
                   </div>
-                  <div class="stage-dates">
-                    <span>📅 ${formatDateDDMMYYYY(stage.startDate)} al ${formatDateDDMMYYYY(stage.endDate)}</span>
+
+                  <div class="stage-meta-grid">
+                    <div class="stage-meta-item">
+                      <span class="sm-label">Plazo</span>
+                      <span class="sm-val">${diffDays} días corridos</span>
+                    </div>
+                    <div class="stage-meta-item">
+                      <span class="sm-label">Inicio</span>
+                      <span class="sm-val">${formatDateDDMMYYYY(stage.startDate)}</span>
+                    </div>
+                    <div class="stage-meta-item">
+                      <span class="sm-label">Término</span>
+                      <span class="sm-val">${formatDateDDMMYYYY(stage.endDate)}</span>
+                    </div>
+                    <div class="stage-meta-item">
+                      <span class="sm-label">Pagos</span>
+                      <span class="sm-val">${formatCLP(stagePaid)} / ${formatCLP(stageBudget)}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span class="stage-duration-pill">⏱️ ${Math.max(1, Math.ceil((new Date(stage.endDate + 'T00:00:00') - new Date(stage.startDate + 'T00:00:00')) / (1000*60*60*24)) + 1)} días de duración</span>
+
+                  <!-- Lista de Estados de Pago (EP) (Imagen 1) -->
+                  <div class="stage-ep-list">
+                    ${stageEPs.map(ep => `
+                      <div class="ep-item-row">
+                        <div class="ep-left-group">
+                          <span class="ep-code">${escapeHtml(ep.epCode || 'EP')}</span>
+                          <span class="ep-name">${escapeHtml(ep.name)}</span>
+                        </div>
+                        <div class="ep-right-group">
+                          <span class="ep-amount">${formatCLP(ep.amount)}</span>
+                          <span class="ep-badge ${ep.paymentStatus === 'pagado' ? 'badge-paid' : (ep.paymentStatus === 'en_tramite' ? 'badge-processing' : 'badge-pending')}">
+                            ${(ep.paymentStatus || 'pagado').toUpperCase()}
+                          </span>
+                          <button class="btn-icon-action" onclick="window.timelineApp.openEditPaymentModal('${ep.id}')" title="Editar pago">✏️</button>
+                        </div>
+                      </div>
+                    `).join('')}
                   </div>
-                  <div class="stage-milestones-count">
-                    📌 ${stageMilestones.length} hitos vinculados
-                  </div>
-                  <div class="stage-card-actions">
-                    <button class="btn-edit-stage-sm" onclick="window.timelineApp.openEditStageModal('${stage.id}')" title="Editar nombre, fechas y duración">
-                      ✏️ Editar Etapa
-                    </button>
-                    <button class="btn-stage-toggle" onclick="window.timelineApp.toggleStageStatus('${stage.id}')" title="Cambiar estado">
-                      <strong>${stage.status.replace('_', ' ')}</strong>
-                    </button>
-                    <button class="btn-icon-tiny" onclick="window.timelineApp.deleteStage('${stage.id}')" title="Eliminar etapa">✕</button>
-                  </div>
+
+                  <button class="btn-add-ep-inline" onclick="window.timelineApp.openCreatePaymentModal('${project.id}', '${stage.id}')">
+                    + Agregar Estado de Pago
+                  </button>
                 </div>
               `;
             }).join('')}
           </div>
         </div>
-
+      `;
+    } else if (tabName === 'calendario') {
+      return `
+        <div class="project-detail-section" style="background:#090E1A; border:1px solid #1E293B; border-radius:10px; padding:20px;">
+          <h3 style="margin-top:0; font-size:16px;">Cronograma del Proyecto en la Línea de Tiempo</h3>
+          <p style="color:#94A3B8; font-size:13px; margin-bottom:16px;">Visualiza este proyecto de forma aislada en la Línea de Tiempo Maestra.</p>
+          <button class="btn-primary" onclick="window.timelineApp.filterByProject('${project.id}')">
+            Abrir Cronograma en Línea de Tiempo Maestra →
+          </button>
+        </div>
+      `;
+    } else if (tabName === 'hitos') {
+      return `
         <div class="project-detail-section">
-          <div class="section-head">
-            <h3>Hitos Particulares (${milestones.length})</h3>
+          <div class="section-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="font-size:16px; font-weight:700; color:#FFFFFF; margin:0;">Hitos del Proyecto (${milestones.length})</h3>
             <button class="btn-action-small" onclick="window.timelineApp.openQuickMilestoneModal(null, '${project.id}')">+ Nuevo Hito</button>
           </div>
-
-          <div class="project-milestones-table-wrapper">
-            <table class="milestones-table">
+          <div class="project-milestones-table-wrapper" style="overflow-x:auto;">
+            <table class="milestones-table" style="width:100%; border-collapse:collapse; font-size:12px;">
               <thead>
-                <tr>
-                  <th>Tipo</th>
-                  <th>Hito</th>
-                  <th>Fecha</th>
-                  <th>Hora</th>
-                  <th>Responsable</th>
-                  <th>Estado</th>
-                  <th>Prioridad</th>
-                  <th>Acciones</th>
+                <tr style="border-bottom:1px solid #1E293B; text-align:left; color:#94A3B8;">
+                  <th style="padding:8px;">Tipo</th>
+                  <th style="padding:8px;">Hito / Actividad</th>
+                  <th style="padding:8px;">Fecha</th>
+                  <th style="padding:8px;">Responsable</th>
+                  <th style="padding:8px;">Estado</th>
+                  <th style="padding:8px;">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 ${milestones.map(m => {
                   const typeDef = MILESTONE_TYPES[m.milestoneType] || MILESTONE_TYPES.reunion;
-    const isTask = m.endDate && normalizeISO(m.endDate) > normalizeISO(m.date);
-    const taskDiffDays = isTask ? Math.max(1, Math.ceil((new Date(normalizeISO(m.endDate) + 'T00:00:00') - new Date(normalizeISO(m.date) + 'T00:00:00')) / (1000*60*60*24)) + 1) : 1;
                   const resp = this.state.members.find(u => u.id === m.responsibleId);
-                  const hasConflict = this.state.milestoneConflictMap.has(m.id);
                   return `
-                    <tr class="${hasConflict ? 'tr-conflict' : ''}">
-                      <td><span class="type-badge-sm">${typeDef.symbol} ${typeDef.label}</span></td>
-                      <td><strong>${escapeHtml(m.name)}</strong> ${hasConflict ? '<span class="warn-pill">⚠ Conflicto</span>' : ''}</td>
-                      <td>${formatDateDDMMYYYY(m.date)}</td>
-                      <td>${m.timeStart || 'Todo el día'}</td>
-                      <td>${resp ? resp.name : '<span style="color:#F59E0B;">Sin asignar</span>'}</td>
-                      <td><span class="m-status-pill">${m.status || 'programado'}</span></td>
-                      <td><span class="priority-badge-sm priority-${m.priority}">${m.priority}</span></td>
-                      <td>
+                    <tr style="border-bottom:1px solid #141E2F;">
+                      <td style="padding:8px;"><span class="type-badge-sm">${typeDef.symbol} ${typeDef.label}</span></td>
+                      <td style="padding:8px;"><strong>${escapeHtml(m.name)}</strong></td>
+                      <td style="padding:8px;">${formatDateDDMMYYYY(m.date)}</td>
+                      <td style="padding:8px;">${resp ? resp.name : '<span style="color:#F59E0B;">Sin asignar</span>'}</td>
+                      <td style="padding:8px;"><span class="m-status-pill">${m.status || 'programado'}</span></td>
+                      <td style="padding:8px;">
                         <button class="btn-link" onclick="window.timelineApp.openEditMilestoneModal('${m.id}')">Editar</button>
                       </td>
                     </tr>
@@ -7483,12 +8119,41 @@ class TimelineApp {
             </table>
           </div>
         </div>
-
-      </div>
-    `;
+      `;
+    } else if (tabName === 'reuniones') {
+      const meetings = milestones.filter(m => m.milestoneType === 'reunion' || m.milestoneType === 'terreno');
+      return `
+        <div class="project-detail-section">
+          <h3 style="font-size:16px; font-weight:700; color:#FFFFFF; margin-bottom:14px;">Reuniones y Visitas a Terreno (${meetings.length})</h3>
+          ${meetings.length === 0 ? '<div style="color:#64748B;">No hay reuniones ni visitas a terreno agendadas.</div>' : ''}
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${meetings.map(m => `
+              <div style="background:#090E1A; border:1px solid #1E293B; border-radius:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <strong style="color:#F8FAFC;">${m.milestoneType === 'terreno' ? '◉' : '●'} ${escapeHtml(m.name)}</strong>
+                  <div style="font-size:11px; color:#94A3B8; margin-top:3px;">
+                    📅 ${formatDateDDMMYYYY(m.date)} ${m.timeStart ? `(${m.timeStart} - ${m.timeEnd || '?'})` : ''} 📍 ${escapeHtml(m.locationOverride || project.commune)}
+                  </div>
+                </div>
+                <button class="btn-secondary" style="font-size:11px; padding:4px 8px;" onclick="window.timelineApp.openMilestoneInspector('${m.id}')">Ver Detalle</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } else if (tabName === 'notas') {
+      return `
+        <div class="project-detail-section" style="background:#090E1A; border:1px solid #1E293B; border-radius:10px; padding:20px;">
+          <h3 style="font-size:16px; margin-top:0;">Notas y Especificaciones Técnicas (EETT)</h3>
+          <p style="color:#CBD5E1; line-height:1.6; font-size:13px; white-space:pre-wrap;">${escapeHtml(project.description || 'Sin notas adicionales ingresadas.')}</p>
+          <div style="margin-top:16px; border-top:1px solid #1E293B; padding-top:14px;">
+            <strong style="font-size:12px; color:#60A5FA;">Documentación en Google Drive</strong>
+            <div style="font-size:11px; color:#94A3B8; margin-top:4px;">Los planos, memorias explicativas y actas de este contrato se sincronizan en la carpeta compartida del proyecto.</div>
+          </div>
+        </div>
+      `;
+    }
   }
-
-  // --- GESTIÓN INTEGRAL DE ETAPAS CON DURACIÓN ---
   openCreateStageModal(projectId) {
     const p = this.state.projects.find(x => x.id === projectId);
     if (!p) return;
@@ -7655,11 +8320,43 @@ class TimelineApp {
     const container = document.getElementById('projectsViewContainer');
     if (!container) return;
 
+    // Calcular KPIs Globales (Imagen 2: $67.650.000, $25.430.000, $42.220.000)
+    const allPaymentMilestones = this.state.milestones.filter(m => m.milestoneType === 'estado_pago' || m.epCode);
+    const totalPaid = allPaymentMilestones
+      .filter(m => m.paymentStatus === 'pagado' || m.status === 'cumplido')
+      .reduce((acc, m) => acc + (Number(m.amount) || 0), 0);
+    const totalBudget = this.state.projects.reduce((acc, p) => acc + (Number(p.budgetTotal) || 0), 0);
+    const totalPending = Math.max(0, totalBudget - totalPaid);
+    const totalProjects = this.state.projects.length;
+    const activeProjects = this.state.projects.filter(p => p.status === 'en_desarrollo' || p.status === 'activo').length;
+
     container.innerHTML = `
       <div class="projects-directory-wrapper">
+        
+        <!-- DASHBOARD KPIS FINANCIEROS GLOBALES (IMAGEN 2) -->
+        <div class="projects-kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-title">TOTAL PROYECTOS</div>
+            <div class="kpi-main-val">${totalProjects}</div>
+            <div class="kpi-sub-label">${activeProjects} activos</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">PRESUPUESTO TOTAL</div>
+            <div class="kpi-main-val text-blue">${formatCLP(totalBudget)}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">PAGOS CURSADOS</div>
+            <div class="kpi-main-val text-green">${formatCLP(totalPaid)}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">PENDIENTE</div>
+            <div class="kpi-main-val text-orange">${formatCLP(totalPending)}</div>
+          </div>
+        </div>
+
         <div class="directory-head">
           <div>
-            <h2>Directorio de Proyectos Activos</h2>
+            <h2>Directorio de Proyectos</h2>
             <p>Monitoreo integral de iniciativas de arquitectura y consultoría urbana.</p>
           </div>
           <button class="btn-primary" onclick="window.timelineApp.openQuickProjectModal()">+ Nuevo Proyecto</button>
@@ -7670,6 +8367,10 @@ class TimelineApp {
             const resp = this.state.members.find(m => m.id === p.responsibleId);
             const projectMilestones = this.state.milestones.filter(m => m.projectId === p.id);
             const stagesCount = this.state.stages.filter(s => s.projectId === p.id).length;
+            const pBudget = Number(p.budgetTotal) || 0;
+            const pPaid = projectMilestones
+              .filter(m => (m.milestoneType === 'estado_pago' || m.epCode) && (m.paymentStatus === 'pagado' || m.status === 'cumplido'))
+              .reduce((acc, m) => acc + (Number(m.amount) || 0), 0);
 
             return `
               <div class="project-summary-card" style="border-top: 5px solid ${p.color};">
@@ -7684,12 +8385,17 @@ class TimelineApp {
 
                 <div class="card-progress">
                   <div class="progress-numbers">
-                    <span>Avance</span>
+                    <span>Avance Físico</span>
                     <span>${p.progress}%</span>
                   </div>
                   <div class="progress-bar-track">
                     <div class="progress-bar-fill" style="width: ${p.progress}%; background: ${p.color};"></div>
                   </div>
+                </div>
+
+                <div class="card-financial-row" style="display:flex; justify-content:space-between; font-size:12px; margin: 10px 0 6px; padding: 8px 0; border-top: 1px solid #1E293B;">
+                  <span style="color:#94A3B8;">Pagos / Contrato:</span>
+                  <strong><span style="color:#10B981;">${formatCLP(pPaid)}</span> / ${formatCLP(pBudget)}</strong>
                 </div>
 
                 <div class="card-stats-footer">

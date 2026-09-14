@@ -53,6 +53,8 @@ CREATE TABLE organizations (
     rut TEXT,
     base_city TEXT DEFAULT 'Quillota',
     google_client_id TEXT,
+    logo_symbol TEXT,
+    logo_color TEXT DEFAULT '#2563EB',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -228,3 +230,13 @@ DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE stages; EXCEPTION WHEN
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE milestones; EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE team_members; EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE organizations; EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+-- ==========================================================================
+-- MÓDULO FINANCIERO Y ESTADOS DE PAGO (v8.5)
+-- ==========================================================================
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS budget_total NUMERIC DEFAULT 0;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS contract_days INT DEFAULT 0;
+ALTER TABLE stages ADD COLUMN IF NOT EXISTS stage_budget NUMERIC DEFAULT 0;
+ALTER TABLE milestones ADD COLUMN IF NOT EXISTS ep_code TEXT;
+ALTER TABLE milestones ADD COLUMN IF NOT EXISTS amount NUMERIC DEFAULT 0;
+ALTER TABLE milestones ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'pendiente';
