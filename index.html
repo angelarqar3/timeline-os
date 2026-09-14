@@ -3331,6 +3331,11 @@ body {
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="stageBudget">Presupuesto Asignado a la Etapa ($ CLP)</label>
+            <input type="number" id="stageBudget" class="input-field" placeholder="Ej: 4500000" min="0">
+          </div>
+
           <div class="form-row-2">
             <div class="form-group">
               <label for="stageEndDate">Fecha Término Estimada <span style="color:var(--accent-rose);">*</span></label>
@@ -3599,6 +3604,17 @@ body {
 
           <div class="form-row-2">
             <div class="form-group">
+              <label for="editPBudgetTotal">Monto Contrato / Presupuesto Total ($ CLP)</label>
+              <input type="number" id="editPBudgetTotal" class="input-field" placeholder="Ej: 6205000" min="0">
+            </div>
+            <div class="form-group">
+              <label for="editPContractDays">Plazo Contractual (Días)</label>
+              <input type="number" id="editPContractDays" class="input-field" placeholder="Ej: 120" min="1">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
               <label for="editPCommune">Comuna / Ciudad</label>
               <input type="text" id="editPCommune" class="input-field">
             </div>
@@ -3689,6 +3705,17 @@ body {
             <div class="form-group">
               <label for="pClient">Cliente / Mandante</label>
               <input type="text" id="pClient" class="input-field" placeholder="Ej. SECPLAN Valdivia">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="pBudgetTotal">Monto Contrato / Presupuesto Total ($ CLP)</label>
+              <input type="number" id="pBudgetTotal" class="input-field" placeholder="Ej: 6205000" min="0">
+            </div>
+            <div class="form-group">
+              <label for="pContractDays">Plazo Contractual (Días)</label>
+              <input type="number" id="pContractDays" class="input-field" placeholder="Ej: 120" min="1" value="120">
             </div>
           </div>
 
@@ -4004,9 +4031,12 @@ body {
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" onclick="window.timelineApp.closePaymentModal()">Cancelar</button>
-          <button type="submit" class="btn-primary" style="background:#10B981;">Guardar Estado de Pago</button>
+        <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-icon-tiny" id="btnDeleteEP" style="display:none; color:#EF4444; background:rgba(239,68,68,0.15); padding:6px 12px; border-radius:6px; font-weight:600;" onclick="window.timelineApp.deletePayment(document.getElementById('epId').value)">🗑️ Eliminar</button>
+          <div style="display:flex; gap:8px; margin-left:auto;">
+            <button type="button" class="btn-secondary" onclick="window.timelineApp.closePaymentModal()">Cancelar</button>
+            <button type="submit" class="btn-primary" style="background:#10B981;">Guardar Estado de Pago</button>
+          </div>
         </div>
       </form>
     </div>
@@ -7435,6 +7465,8 @@ class TimelineApp {
     const startDate = document.getElementById('pStartDate').value || this.todayStr;
     const endDate = document.getElementById('pEndDate').value || '2026-12-31';
     const color = document.getElementById('pColor').value || '#2563EB';
+    const budgetTotal = Number(document.getElementById('pBudgetTotal').value) || 0;
+    const contractDays = Number(document.getElementById('pContractDays').value) || 120;
 
     if (!name) {
       alert('Ingresa el nombre del proyecto.');
@@ -7501,6 +7533,8 @@ class TimelineApp {
     document.getElementById('pProgressVal').textContent = (p.progress || 0) + '%';
     document.getElementById('editPColor').value = p.color || '#2563EB';
     document.getElementById('editPDescription').value = p.description || '';
+    document.getElementById('editPBudgetTotal').value = p.budgetTotal || '';
+    document.getElementById('editPContractDays').value = p.contractDays || 120;
 
     const respSelect = document.getElementById('editPResponsible');
     respSelect.innerHTML = '<option value="">-- Sin asignar --</option>' + 
@@ -7534,6 +7568,8 @@ class TimelineApp {
     p.progress = parseInt(document.getElementById('editPProgress').value, 10);
     p.color = document.getElementById('editPColor').value;
     p.description = document.getElementById('editPDescription').value.trim();
+    p.budgetTotal = Number(document.getElementById('editPBudgetTotal').value) || 0;
+    p.contractDays = Number(document.getElementById('editPContractDays').value) || 120;
 
     this.saveState();
     this.populateFilterDropdowns();
@@ -8217,6 +8253,7 @@ class TimelineApp {
     document.getElementById('stageEndDate').value = end.toISOString().split('T')[0];
     
     document.getElementById('stageStatus').value = 'en_desarrollo';
+    document.getElementById('stageBudget').value = '';
 
     // Poblar responsables
     const respSelect = document.getElementById('stageResponsible');
@@ -8248,6 +8285,7 @@ class TimelineApp {
     document.getElementById('stageDuration').value = diffDays;
     
     document.getElementById('stageStatus').value = s.status || 'pendiente';
+    document.getElementById('stageBudget').value = s.stageBudget || '';
 
     const respSelect = document.getElementById('stageResponsible');
     respSelect.innerHTML = '<option value="">-- Sin asignar --</option>' + 
@@ -8326,6 +8364,7 @@ class TimelineApp {
         s.endDate = endDate;
         s.responsibleId = responsibleId;
         s.status = status;
+        s.stageBudget = Number(document.getElementById('stageBudget').value) || 0;
         this.showToast(`Etapa "${name}" actualizada (${duration} días).`);
         if (this.state.supabase.isConnected) {
           this.supabaseService.updateStage(s);
@@ -8340,7 +8379,8 @@ class TimelineApp {
         startDate,
         endDate,
         status,
-        responsibleId
+        responsibleId,
+        stageBudget: Number(document.getElementById('stageBudget').value) || 0
       };
       this.state.stages.push(newStage);
       this.showToast(`Etapa "${name}" creada exitosamente (${duration} días).`);
@@ -9934,6 +9974,151 @@ if (!data) {
     }
   }
 
+
+
+  // --- GESTIÓN INTEGRAL DE ESTADOS DE PAGO (EP) ---
+  openCreatePaymentModal(projectId, stageId = null) {
+    const modal = document.getElementById('paymentModal');
+    if (!modal) return;
+
+    document.getElementById('paymentModalTitle').textContent = 'REGISTRAR ESTADO DE PAGO';
+    document.getElementById('epProjectId').value = projectId;
+    document.getElementById('epId').value = '';
+    document.getElementById('epName').value = '';
+    document.getElementById('epAmount').value = '';
+    document.getElementById('epDate').value = this.todayStr;
+    document.getElementById('epStatus').value = 'pagado';
+
+    const projectMilestones = this.state.milestones.filter(m => m.projectId === projectId && (m.milestoneType === 'estado_pago' || m.epCode));
+    const nextNum = projectMilestones.length + 1;
+    document.getElementById('epCode').value = `EP${String(nextNum).padStart(2, '0')}`;
+
+    const stageSelect = document.getElementById('epStageId');
+    const stages = this.state.stages.filter(s => s.projectId === projectId);
+    stageSelect.innerHTML = stages.map(s => `
+      <option value="${s.id}" ${s.id === stageId ? 'selected' : ''}>${escapeHtml(s.name)}</option>
+    `).join('');
+
+    const btnDel = document.getElementById('btnDeleteEP');
+    if (btnDel) btnDel.style.display = 'none';
+
+    modal.classList.add('is-open');
+    setTimeout(() => document.getElementById('epName').focus(), 80);
+  }
+
+  openEditPaymentModal(epId) {
+    const ep = this.state.milestones.find(m => m.id === epId);
+    if (!ep) return;
+
+    const modal = document.getElementById('paymentModal');
+    if (!modal) return;
+
+    document.getElementById('paymentModalTitle').textContent = 'EDITAR ESTADO DE PAGO';
+    document.getElementById('epProjectId').value = ep.projectId;
+    document.getElementById('epId').value = ep.id;
+    document.getElementById('epCode').value = ep.epCode || 'EP01';
+    document.getElementById('epName').value = ep.name;
+    document.getElementById('epAmount').value = ep.amount || 0;
+    document.getElementById('epDate').value = normalizeISO(ep.date);
+    document.getElementById('epStatus').value = ep.paymentStatus || (ep.status === 'cumplido' ? 'pagado' : 'pendiente');
+
+    const stageSelect = document.getElementById('epStageId');
+    const stages = this.state.stages.filter(s => s.projectId === ep.projectId);
+    stageSelect.innerHTML = stages.map(s => `
+      <option value="${s.id}" ${s.id === ep.stageId ? 'selected' : ''}>${escapeHtml(s.name)}</option>
+    `).join('');
+
+    const btnDel = document.getElementById('btnDeleteEP');
+    if (btnDel) btnDel.style.display = 'inline-block';
+
+    modal.classList.add('is-open');
+    setTimeout(() => document.getElementById('epAmount').focus(), 80);
+  }
+
+  closePaymentModal() {
+    const modal = document.getElementById('paymentModal');
+    if (modal) modal.classList.remove('is-open');
+  }
+
+  async savePaymentModal() {
+    const projectId = document.getElementById('epProjectId').value;
+    const epId = document.getElementById('epId').value;
+    const epCode = document.getElementById('epCode').value.trim() || 'EP';
+    const name = document.getElementById('epName').value.trim() || 'Estado de Pago';
+    const amount = Number(document.getElementById('epAmount').value) || 0;
+    const stageId = document.getElementById('epStageId').value || null;
+    const date = document.getElementById('epDate').value || this.todayStr;
+    const paymentStatus = document.getElementById('epStatus').value;
+
+    if (epId) {
+      const m = this.state.milestones.find(x => x.id === epId);
+      if (m) {
+        m.name = name;
+        m.epCode = epCode;
+        m.amount = amount;
+        m.stageId = stageId;
+        m.date = date;
+        m.paymentStatus = paymentStatus;
+        m.status = paymentStatus === 'pagado' ? 'cumplido' : 'programado';
+        if (this.state.supabase.isConnected) {
+          await this.supabaseService.saveMilestone(m);
+        }
+        this.showToast(`✓ Estado de Pago "${epCode}" actualizado`);
+      }
+    } else {
+      const newEP = {
+        id: generateUUID(),
+        projectId,
+        stageId,
+        epCode,
+        name,
+        amount,
+        date,
+        timeStart: '12:00',
+        timeEnd: '13:00',
+        milestoneType: 'estado_pago',
+        paymentStatus,
+        status: paymentStatus === 'pagado' ? 'cumplido' : 'programado',
+        priority: 'alta'
+      };
+      this.state.milestones.push(newEP);
+      if (this.state.supabase.isConnected) {
+        await this.supabaseService.saveMilestone(newEP);
+      }
+      this.showToast(`✓ Estado de Pago "${epCode}" registrado exitosamente`);
+    }
+
+    this.saveState();
+    this.closePaymentModal();
+    this.renderProjectDetailView(projectId);
+    this.timelineRenderer.setData(this.getRendererData());
+  }
+
+  async deletePayment(epId) {
+    if (!confirm('¿Seguro que deseas eliminar este Estado de Pago?')) return;
+    const idx = this.state.milestones.findIndex(m => m.id === epId);
+    if (idx !== -1) {
+      const m = this.state.milestones[idx];
+      const pId = m.projectId;
+      this.state.milestones.splice(idx, 1);
+      if (this.state.supabase.isConnected) {
+        await this.supabaseService.deleteMilestone(epId);
+      }
+      this.saveState();
+      this.closePaymentModal();
+      this.renderProjectDetailView(pId);
+      this.timelineRenderer.setData(this.getRendererData());
+      this.showToast('Estado de Pago eliminado.');
+    }
+  }
+
+  filterByProject(projectId) {
+    this.setView('timeline');
+    if (this.timelineRenderer) {
+      this.timelineRenderer.setViewMode('proyecto', projectId);
+      this.timelineRenderer.scrollToDate(this.todayStr, false);
+    }
+  }
 
   updateHeaderControlsForCurrentView() {
     const isTimeline = this.state.currentView === 'timeline';
