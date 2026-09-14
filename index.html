@@ -5850,6 +5850,7 @@ class SupabaseService {
           endDate: row.end_date,
           status: row.status,
           responsibleId: row.responsible_id,
+          stageBudget: row.stage_budget !== undefined && row.stage_budget !== null ? Number(row.stage_budget) : 0,
           updatedAt: row.updated_at
         };
 
@@ -5973,21 +5974,36 @@ class SupabaseService {
       location_override: m.locationOverride || null,
       end_date: m.endDate || null,
       ep_code: m.epCode || null,
-      amount: m.amount || null,
+      amount: m.amount !== undefined && m.amount !== null ? Number(m.amount) : null,
       payment_status: m.paymentStatus || null,
       observations: m.observations || null,
       gcal_event_id: m.gcalEventId || null
     };
 
     try {
-      const res = await fetch(`${this.baseUrl}/milestones`, {
+      let res = await fetch(`${this.baseUrl}/milestones`, {
         method: 'POST',
         headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(row)
       });
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({ message: res.statusText }));
-        return { error: errJson.message || `Error HTTP ${res.status}` };
+        const errMsg = errJson.message || '';
+        if (errMsg.includes('ep_code') || errMsg.includes('amount') || errMsg.includes('payment_status') || errMsg.includes('end_date') || errJson.code === 'PGRST204') {
+          console.warn('Supabase no tiene columnas ep_code/amount/end_date en milestones. Reintentando guardado base...');
+          const basicRow = { ...row };
+          delete basicRow.ep_code;
+          delete basicRow.amount;
+          delete basicRow.payment_status;
+          delete basicRow.end_date;
+          res = await fetch(`${this.baseUrl}/milestones`, {
+            method: 'POST',
+            headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+            body: JSON.stringify(basicRow)
+          });
+          if (res.ok) return { error: 'COLUMNS_MISSING_WARNING' };
+        }
+        return { error: errMsg || `Error HTTP ${res.status}` };
       }
       return { error: null };
     } catch (e) {
@@ -6021,18 +6037,36 @@ class SupabaseService {
       end_date: p.endDate,
       color: p.color,
       progress: p.progress || 0,
-      description: p.description
+      description: p.description,
+      budget_total: p.budgetTotal !== undefined ? Number(p.budgetTotal) : 0,
+      contract_days: p.contractDays !== undefined ? Number(p.contractDays) : 120
     };
 
     try {
-      const res = await fetch(`${this.baseUrl}/projects`, {
+      let res = await fetch(`${this.baseUrl}/projects`, {
         method: 'POST',
         headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(row)
       });
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({ message: res.statusText }));
-        return { error: errJson.message || `Error HTTP ${res.status}` };
+        const errMsg = errJson.message || '';
+        // Si Supabase rechaza por columnas no creadas aún (PGRST204), reintentar sin ellas
+        if (errMsg.includes('budget_total') || errMsg.includes('contract_days') || errJson.code === 'PGRST204') {
+          console.warn('Supabase no tiene columnas financieras en projects aún. Reintentando guardado base...');
+          const basicRow = { ...row };
+          delete basicRow.budget_total;
+          delete basicRow.contract_days;
+          res = await fetch(`${this.baseUrl}/projects`, {
+            method: 'POST',
+            headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+            body: JSON.stringify(basicRow)
+          });
+          if (res.ok) {
+            return { error: 'COLUMNS_MISSING_WARNING' };
+          }
+        }
+        return { error: errMsg || `Error HTTP ${res.status}` };
       }
       return { error: null };
     } catch (e) {
@@ -6058,18 +6092,31 @@ class SupabaseService {
       start_date: s.startDate,
       end_date: s.endDate,
       status: s.status,
-      responsible_id: s.responsibleId || null
+      responsible_id: s.responsibleId || null,
+      stage_budget: s.stageBudget !== undefined ? Number(s.stageBudget) : 0
     };
 
     try {
-      const res = await fetch(`${this.baseUrl}/stages`, {
+      let res = await fetch(`${this.baseUrl}/stages`, {
         method: 'POST',
         headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
         body: JSON.stringify(row)
       });
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({ message: res.statusText }));
-        return { error: errJson.message || `Error HTTP ${res.status}` };
+        const errMsg = errJson.message || '';
+        if (errMsg.includes('stage_budget') || errJson.code === 'PGRST204') {
+          console.warn('Supabase no tiene stage_budget en stages aún. Reintentando guardado base...');
+          const basicRow = { ...row };
+          delete basicRow.stage_budget;
+          res = await fetch(`${this.baseUrl}/stages`, {
+            method: 'POST',
+            headers: await this.getHeaders({ 'Prefer': 'resolution=merge-duplicates' }),
+            body: JSON.stringify(basicRow)
+          });
+          if (res.ok) return { error: 'COLUMNS_MISSING_WARNING' };
+        }
+        return { error: errMsg || `Error HTTP ${res.status}` };
       }
       return { error: null };
     } catch (e) {
@@ -9343,10 +9390,47 @@ if (!data) {
       throw new Error('No se pudo conectar a Supabase (fetchAllData devolvió null)');
     }
 
-    this.state.projects = data.projects;
-    const projectIds = new Set(data.projects.map(p => p.id));
-    this.state.stages = (data.stages || []).filter(s => projectIds.has(s.projectId));
-    this.state.milestones = (data.milestones || []).filter(m => projectIds.has(m.projectId));
+    // Preservar datos financieros locales si Supabase aún no tiene las columnas creadas en PostgreSQL
+    const existingProjectsMap = new Map(this.state.projects.map(p => [p.id, p]));
+    const mergedProjects = data.projects.map(p => {
+      const existing = existingProjectsMap.get(p.id);
+      if (existing) {
+        if ((!p.budgetTotal || p.budgetTotal === 0) && existing.budgetTotal) p.budgetTotal = existing.budgetTotal;
+        if ((!p.contractDays || p.contractDays === 120) && existing.contractDays) p.contractDays = existing.contractDays;
+      }
+      return p;
+    });
+
+    const projectIds = new Set(mergedProjects.map(p => p.id));
+
+    const existingStagesMap = new Map(this.state.stages.map(s => [s.id, s]));
+    const mergedStages = (data.stages || []).filter(s => projectIds.has(s.projectId)).map(s => {
+      const existing = existingStagesMap.get(s.id);
+      if (existing && (!s.stageBudget || s.stageBudget === 0) && existing.stageBudget) {
+        s.stageBudget = existing.stageBudget;
+      }
+      return s;
+    });
+
+    const existingMilestonesMap = new Map(this.state.milestones.map(m => [m.id, m]));
+    const mergedMilestones = (data.milestones || []).filter(m => projectIds.has(m.projectId)).map(m => {
+      const existing = existingMilestonesMap.get(m.id);
+      if (existing) {
+        if (!m.amount && existing.amount) m.amount = existing.amount;
+        if (!m.epCode && existing.epCode) m.epCode = existing.epCode;
+        if (!m.paymentStatus && existing.paymentStatus) m.paymentStatus = existing.paymentStatus;
+      }
+      return m;
+    });
+
+    // Mantener también los Estados de Pago creados localmente que aún no hayan sincronizado en Supabase
+    const supabaseMilestoneIds = new Set(mergedMilestones.map(m => m.id));
+    const localOnlyEPs = this.state.milestones.filter(m => projectIds.has(m.projectId) && (m.milestoneType === 'estado_pago' || m.epCode) && !supabaseMilestoneIds.has(m.id));
+    mergedMilestones.push(...localOnlyEPs);
+
+    this.state.projects = mergedProjects;
+    this.state.stages = mergedStages;
+    this.state.milestones = mergedMilestones;
     this.state.members = data.members;
     this.state.company = data.company;
     this.state.supabase.isConnected = true;
